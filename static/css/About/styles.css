@@ -1,0 +1,239 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap");
+
+:root {
+    --background-color: #000;
+    --foreground-color: #fff;
+    --font-color: #fff;
+    --btn-hover : #aaa;
+    --input-field: #333;
+  }
+
+* {
+    margin : 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1em;
+    background-color: var(--background-color);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+  }
+  
+  .navbar-logo a {
+    color: var(--font-color);
+    font-size: 1.2em;
+    font-weight: bold;
+    text-decoration: none;
+  }
+  
+  .navbar-links {
+    list-style: none;
+    display: flex;
+    gap: 5em;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .navbar-links li a {
+    color: var(--font-color);
+    text-decoration: none;
+  }
+  
+  .navbar-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+  }
+  
+  .toggle-bar {
+    width: 25px;
+    height: 3px;
+    background-color: var(--font-color);
+    border-radius: 3px;
+  }  
+
+.hero{
+    position: relative;
+    width: 100%;
+    background-color: var(--background-color);
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.heading h1 {
+    color:var(--font-color);
+    font-size: 3rem;
+    text-align: center;
+    margin-top: 60px;
+}
+.container {
+    display: flex;
+    justify-content: space-between;
+    gap : 15px;
+    align-items: center;
+    width: 90%;
+    margin: 65px auto;
+}
+.hero-content{
+    flex:1;
+    width:600px;
+    margin: 0px 25px;
+    animation: fadeInUp 2s ease;
+}
+.hero-content h2{
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--input-field);
+}
+.hero-content p{
+    font-size : 1rem;
+    line-height: 1.5;
+    margin-bottom: 40px;
+    color: var(--btn-hover);
+    text-align: justify;
+}
+.hero-content button {
+    display : inline-block;
+    background-color: var(--font-color);
+    color: var(--background-color);
+    align-items: center;
+    padding : 12px 24px;
+    border-radius: 5px;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+.hero-content button:hover{
+    background-color: var(--btn-hover);
+    transform: scale(1.1);
+} 
+.hero-image{
+    flex:1;
+    width:600px;
+    margin: auto;
+    animation: fadeInRight 2s ease;
+}
+
+img{
+    width:100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+footer {
+    text-align: center;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    position: sticky;
+    width: 100%;
+    bottom: 0;
+  }  
+  
+@media screen and (max-width: 768px) {
+    .heading h1 {
+        font-size: 45px;
+    }
+    .hero{
+        margin:0px;
+    }
+    .container{
+        width:100%;
+        flex-direction: column;
+        margin:0px;
+        padding:0px 40px;
+    }
+    .hero-content {
+        width: 100%;
+        margin: 35px 0px;
+    }
+    .hero-content h2 {
+        font-size: 1rem; 
+    }
+    .hero-content p {
+        margin-bottom: 20px
+    }
+    .hero-content button {
+        font-size : 16px;
+        padding: 8px 16px; 
+    }
+    .hero-image{
+        width:100%;
+        margin-bottom: 20px;
+    }
+} 
+
+@media (max-width: 570px) {
+    .navbar-links {
+        display: none;
+        justify-content: flex-start;
+        position: absolute;
+        list-style: none;
+        top: 60px;
+        right: 0;
+        margin: 0;
+        background-color: var(--background-color);
+        width: 50%;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+      }
+    
+      .navbar-links li {
+        text-align: right;
+        padding: 10px 100px;
+      }
+    
+      .navbar-links.active {
+        display: block;
+        width: 50%;
+        opacity: 1;
+      }
+    
+      .navbar-toggle {
+        display: flex;
+      }
+      .navbar-toggle.active .toggle-bar:nth-child(1) {
+        transform: rotate(45deg);
+        top: 0;
+      }
+      
+      .navbar-toggle.active .toggle-bar:nth-child(2) {
+        opacity: 0;
+      }
+      
+      .navbar-toggle.active .toggle-bar:nth-child(3) {
+        transform: rotate(-45deg);
+        top: -5px;
+      }
+} 
+
+@keyframes fadeInUp {
+    0%{
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    100%{
+        opacity: 1;
+        transform: translateY(0px);
+    }
+}
+
+@keyframes fadeInRight {
+    0%{
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    100%{
+        opacity: 1;
+        transform: translateY(0px);
+    }
+}
