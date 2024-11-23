@@ -1,25 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>HVpdf</title>
+    <title>Hivaani</title>
     <meta charset="utf-8">
     <meta name = "Viewport" content="width=device-width, initial-scale=1.0">
-    <script
-      src="https://kit.fontawesome.com/64d58efce2.js"
-      crossorigin="anonymous"
-    ></script>
-    <link rel="stylesheet" href="static/css/About/styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/About/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
 </head>
 <body>
     <header>
         <nav class="navbar">
           <div class="navbar-logo">
-            <a href="/">HVpdf</a>
+            <a href="/">Hivaani</a>
           </div>
           <ul class="navbar-links" id="navbar-links">
             <li><a href="/about">Home</a></li>
-            <li><a href="#">Pricing</a></li>
-            <li><a href="#">Contact</a></li>
+            <li><a href="/pricing">Pricing</a></li>
+            <li><a href="/contact">Contact</a></li>
           </ul>
           <div class="navbar-toggle" id="navbar-toggle">
             <span class="toggle-bar"></span>
@@ -34,7 +31,7 @@
         </div>
         <div class="container">
             <div class="hero-content">
-                <p>At HVpdf, we're revolutionizing the way you interact with documents. Gone are the days of manually sifting through pages of information. With our powerful AI-driven tool, you can simply upload your PDFs and ask any questions you have—instantly receiving clear, concise answers.</p>
+                <p>At Harvi, we're revolutionizing the way you interact with documents. Gone are the days of manually sifting through pages of information. With our powerful AI-driven tool, you can simply upload your PDFs and ask any questions you have—instantly receiving clear, concise answers.</p>
                 <p>Whether you're a student, professional, or researcher, HVpdf makes document review and research faster, easier, and more efficient. Our intelligent system understands the content of your PDFs, extracting key data points and making them available for quick reference.</p>
                 <p>Our advanced technology ensures that no matter how complex your document is, you’ll always get relevant insights with just a few clicks. Say goodbye to information overload and hello to a smarter, faster way of working.</p>    
                 <button class="cta-button" id="learnMoreBtn">Learn More</button>
@@ -50,9 +47,9 @@
         </div>
     </section>
     <footer>
-        <p>&copy; 2024 All rights reserved | HVpdf</p>
+        <p>&copy; 2024 All rights reserved | Hivaani</p>
     </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.js"></script>
-    <script src="static/js/about/about.js"></script>
+    <script src="{{ url_for('static', filename='js/about/about.js') }}"></script>
 </body>
 </html>

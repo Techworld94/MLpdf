@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/home/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home_chat/styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <title>Hivaani</title>
 </head>
@@ -16,27 +16,10 @@
                 <button class="hide-sidebar"><i class="fa fa-chevron-left"></i></button>
             </div>
             <ul class="conversations">
-                <li class="grouping">Today</li>
-                <li class="active">
-                    <button class="conversation-button"><i class="fa fa-message fa-regular"></i> This is a conversation title</button>
-                    <div class="fade"></div>
-                    <div class="edit-buttons">
-                        <button><i class="fa fa-edit"></i></button>
-                        <button><i class="fa fa-trash"></i></button>
-                    </div>
-                </li>
-                <li class="grouping">Yesterday</li>
-                <li>
-                    <button class="conversation-button"><i class="fa fa-message fa-regular"></i> This is a conversation title</button>
-                    <div class="fade"></div>
-                    <div class="edit-buttons">
-                        <button><i class="fa fa-edit"></i></button>
-                        <button><i class="fa fa-trash"></i></button>
-                    </div>
-                </li>
+                 <!--Conversation items will be dynamically inserted here by JavaScript -->
             </ul>
         </div>
-        <div class="user-menu">
+        <div class="user-menu" id="userMenu" data-username="{{ username }}">
             <button>
                 <i class="user-icon">{{ username[0].upper() }}</i>
                 {{username}}
@@ -97,33 +80,8 @@
             <div class="model-name">
                 <i class="fa fa-bolt"></i> Default (GPT-3.5)
             </div>
-            <div class="user message">
-                <div class="identity">
-                    <i class="user-icon">u</i>
-                </div>
-                <div class="content">
-                    <p>Hello, how are you?</p>
-                </div>
-            </div>
-            <div class="assistant message">
-                <div class="identity">
-                    <i class="gpt user-icon">G</i>
-                </div>
-                <div class="content">
-                    <p>I'm doing well, thank you!</p>
-                </div>
-            </div>
+            <!----Message update dynamically-->
         </div>
-
-         <!-- File upload section -->
-        <div id="file-upload-section" class="upload-area">
-            <div class="drag-drop-container">
-                <i class="fa fa-cloud-upload-alt upload-icon"></i>
-                <h3>Drag and drop files here, or click to select files</h3>
-                <p>Supports multiple file uploads</p>
-                <input type="file" id="file-upload" multiple hidden>
-            </div>
-        </div> 
 
         <!-- Message form section -->
         <div id="message-form">
@@ -135,12 +93,18 @@
         </div>
     </main>
 
-    <!--------Loader--------------->
+    <!-- ------Loader-------------
     <div id="loader" style="display: none;">
         <div class="spinner"></div>
         <p>Processing...</p>
+    </div> -->
+
+    <!-- ------Hidden------------->
+    <div id="session-titles" 
+         data-titles="{{ session_titles }}" 
+        data-messages="{{ messages }}">
     </div>
 
-    <script src="{{ url_for('static', filename='js/home/home.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/home_chat/home_chat.js') }}"></script>
 </body>
 </html>

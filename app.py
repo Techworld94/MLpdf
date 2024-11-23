@@ -1,12 +1,20 @@
+import os
+import io
+import asyncio
+import uuid
+import json
+from datetime import datetime, timezone
 from flask import Flask, render_template,jsonify,request,redirect,url_for
 from flask_cors import CORS
+from werkzeug.security import check_password_hash, generate_password_hash
 from Misc.conn import MongoDBConnector
 from Misc.session import SessionManager
-from werkzeug.security import check_password_hash, generate_password_hash
-import os
+from ML_Models.pdf_extractor import PDFExtractor
+from ML_Models.ML_Logic import QueryBot
 
 app = Flask(__name__)
 app.secret_key = os.getenv("Secret_Key")
+base_directory = os.getenv("Base_Dir")
 CORS(app)
 
 ##################### Initialize Session ####################
@@ -20,6 +28,8 @@ db_connector.connect()
 client = db_connector.get_client()
 db = client['HVpdf_Bot']
 users_collection = db['Users']
+vector_collection = db['User_Vectors']
+chat_collection = db['User_Chats']
 
 ####################### Login ##########################
 
@@ -35,6 +45,18 @@ def index():
 def about():
     return render_template('AboutUs.html')
 
+####################### Pricing ##########################
+
+@app.route('/pricing')
+def pricing():
+    return render_template('pricing.html')
+
+####################### Pricing ##########################
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
 ########################## HVPDF Chat Home ########################
 
 @app.route('/home')
@@ -43,6 +65,10 @@ def home():
     if redirect_response:
         return redirect_response
     username = session_manager.get_logged_in_user()
+    user = users_collection.find_one({"username": username})
+    if not user:
+        session_manager.clear_user_session()
+        return redirect(url_for('index'))
     return render_template('home.html', username=username)
 
 ########################## Login API ######################
@@ -86,6 +112,188 @@ def signup():
 
 ######################## Forgot Password link ########################
 
+
+######################## Uploaded Files Validation #######################
+
+@app.route('/validate_files', methods=['POST'])
+def validate_files():
+    files = request.files.getlist('files[]')
+    if not files:
+        return jsonify({"results": []})
+
+    extractor = PDFExtractor()
+    results = []
+
+    for file in files:
+        file_status = {"filename": file.filename} 
+
+        if not file.filename.endswith('.pdf'):
+            file_status["status"] = "❌ file extension is incorrect"
+            results.append(file_status)
+            continue
+
+        try:
+            file_stream = io.BytesIO(file.read())
+            extracted_text = asyncio.run(extractor._extract_text_from_pdf(file_stream))
+            if extracted_text.strip():
+                file_status["status"] = "✅ text extracted successfully"
+            else:
+                file_status["status"] = "❌ No text extracted. File may be corrupted."
+        except Exception as e:
+            file_status["status"] = f"❌ {str(e)}"
+
+        results.append(file_status)
+
+    return jsonify({"results": results})
+
+######################## Process Files #########################################
+
+@app.route('/process_files', methods=['POST'])
+def process_files():
+    files = request.files.getlist('files[]')
+    username = session_manager.get_logged_in_user()
+    if not files:
+        return jsonify({"error": "No files uploaded"}), 400
+    
+    extractor = PDFExtractor()
+    session_id = str(uuid.uuid4())
+    save_directory = os.path.join(base_directory, username)
+    os.makedirs(save_directory, exist_ok=True)
+    faiss_index_path = os.path.join(save_directory, session_id)
+
+    try:
+        file_streams = [io.BytesIO(file.read()) for file in files]
+        raw_text = asyncio.run(extractor.extract_text(file_streams))
+        text_chunks = extractor.chunk_text(raw_text)
+        vector_store = extractor.create_vector_store(text_chunks)
+        vector_store.save_local(faiss_index_path)
+
+        vector_data = {
+            "username": username,
+            "session_id": session_id,
+            "faiss_index_path": faiss_index_path
+        }
+
+        vector_collection.insert_one(vector_data)
+        session_url = f"/c/{session_id}"
+        return jsonify({"session_url": session_url})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+######################## Open a new session ###############################
+
+@app.route('/home', defaults={'session_id': None})
+@app.route('/c/<session_id>')
+def session_home(session_id):
+    username = session_manager.get_logged_in_user()
+    session_data = vector_collection.find_one({"session_id": session_id})
+    sessions = list(chat_collection.find({"username": username}))
+
+    if not sessions:
+        session_titles = []
+    else:
+        session_titles = [
+            {"title": session["title"], 
+             "session_id": session["session_id"],
+             "date": session["created_at"].replace(tzinfo=timezone.utc).astimezone(timezone.utc).strftime('%Y-%m-%d')}
+            for session in sessions
+        ]
+
+    print(session_titles)
+
+    messages = []
+    if sessions:
+        for session in sessions:
+            session_messages = session.get("messages", [])
+            messages.extend(session_messages)
+
+    if not session_data:
+        return "Session not found", 404
+
+    return render_template(
+        'home_chat.html', 
+        session_id=session_id, 
+        username=username,
+        session_titles=json.dumps(session_titles),
+        messages=json.dumps(messages))
+
+######################### Making conversations ############################
+
+@app.route('/query-bot', methods=['POST'])
+async def query_bot():
+    try:
+        data = request.json        
+        if not data:
+            return jsonify({"error": "Invalid JSON data"}), 400
+        
+        session_id = data.get('session_id')
+        user_question = data.get('question')
+        username = data.get('username')
+        
+        if not session_id or not user_question:
+            return jsonify({"error": "Missing session_id or question"}), 400
+        
+        session_data = vector_collection.find_one({"session_id": session_id})
+        
+        if not session_data:
+            return jsonify({"error": "Session not found"}), 404
+        
+        faiss_index_path = session_data.get('faiss_index_path')
+        if not faiss_index_path:
+            return jsonify({"error": "FAISS index file not found"}), 404
+        
+        #optional when deploy to cloud
+        faiss_index_path = os.path.normpath(faiss_index_path)
+
+        if not os.path.exists(faiss_index_path):
+            return jsonify({"error": f"FAISS index file not found at {faiss_index_path}"}), 404
+
+        bot = QueryBot(faiss_index_path=faiss_index_path)       
+        bot.load_vector_store(embedding_model="models/text-embedding-004")
+        response = await bot.answer_question(user_question, chat_model="gemini-1.5-pro")
+        print("Bot Response:", response)
+        
+        # Check if a session already exists in chat_collection
+        chat_session = chat_collection.find_one({"session_id": session_id})
+
+        if not chat_session:
+            new_session = {
+                "username" : username,
+                "session_id": session_id,
+                "title": user_question[:50],
+                "messages": [
+                    {"role": "user", "content": user_question},
+                    {"role": "bot", "content": response}
+                ],
+                "created_at": datetime.utcnow()
+            }
+            chat_collection.insert_one(new_session)
+            return jsonify({"response": response, "username": username, "session_id": session_id, "title": new_session["title"]})
+        else:
+            chat_collection.update_one(
+                {"session_id": session_id},
+                {
+                    "$push": {
+                        "messages": {"$each": [
+                            {"role": "user", "content": user_question},
+                            {"role": "bot", "content": response}
+                        ]}
+                    }
+                }
+            )
+            return jsonify({"response": response, "username": username, "session_id": session_id, "title": chat_session.get("title", "New Chat")})
+    except Exception as e:
+        print(f"Error in query_bot: {e}")
+        return jsonify({"error": str(e)}), 500
+
+######################## Get the Chats #####################
+
+@app.route('/get-chat/<session_id>', methods=['GET'])
+def get_chat(session_id):
+    chat_data = chat_collection.find_one({"session_id": session_id})
+    if chat_data:
+        return jsonify({"messages": chat_data["messages"]})
+    return jsonify({"error": "Chat not found"}), 404
 
 ######################## Logout #############################
 

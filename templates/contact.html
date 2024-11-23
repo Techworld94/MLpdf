@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hivaani</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/contact/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  </head>
+  <body>
+    <header>
+      <nav class="navbar">
+        <div class="navbar-logo">
+          <a href="/">Hivaani</a>
+        </div>
+        <ul class="navbar-links" id="navbar-links">
+          <li><a href="/about">Home</a></li>
+          <li><a href="/pricing">Pricing</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+        <div class="navbar-toggle" id="navbar-toggle">
+          <span class="toggle-bar"></span>
+          <span class="toggle-bar"></span>
+          <span class="toggle-bar"></span>
+        </div>
+      </nav>
+    </header>
+    <div class="container">
+      <span class="big-circle"></span>
+      <div class="form">
+        <div class="contact-info">
+          <h3 class="title">Let's get in touch</h3>
+          <p class="text">
+            Have a question or an idea? We're here to help! Reach out to us and let's start a conversation. 
+            Your next great project is just a message away!
+          </p>
+
+          <div class="info">
+            <div class="information">
+              <img src="static/images/location.png" class="icon" alt="" />
+              <p>Henry Dunantweg 5B, 2402NM, Alphen aan den rijn</p>
+            </div>
+            <div class="information">
+              <img src="static/images/email.png" class="icon" alt="" />
+              <p>htechno0786@gmail.com</p>
+            </div>
+            <div class="information">
+              <img src="static/images/phone.png" class="icon" alt="" />
+              <p>+31-639262121</p>
+            </div>
+          </div>
+
+          <div class="social-media">
+            <p>Connect with us :</p>
+            <div class="social-icons">
+              <a href="#">
+                <i class="fab fa-facebook-f"></i>
+              </a>
+              <a href="#">
+                <i class="fab fa-twitter"></i>
+              </a>
+              <a href="#">
+                <i class="fab fa-instagram"></i>
+              </a>
+              <a href="#">
+                <i class="fab fa-linkedin-in"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-form">
+          <span class="circle one"></span>
+          <span class="circle two"></span>
+
+          <form action="index.html" autocomplete="off">
+            <h3 class="title">Contact us</h3>
+            <div class="input-container">
+              <input type="text" name="name" class="input" />
+              <label for="">
+                <i class="fas fa-user"></i> Username
+              </label>
+              <span>Username</span>
+            </div>
+            <div class="input-container">
+              <input type="email" name="email" class="input" />
+              <label for="">
+                <i class="fas fa-envelope"></i> Email
+              </label>
+              <span>Email</span>
+            </div>
+            <div class="input-container">
+              <input type="tel" name="phone" class="input" />
+              <label for="">
+                <i class="fas fa-phone"></i> Phone
+              </label>
+              <span>Phone</span>
+            </div>
+            <div class="input-container textarea">
+              <textarea name="message" class="input"></textarea>
+              <label for="">
+                <i class="fas fa-comment"></i> Message
+              </label>
+              <span>Message</span>
+            </div>
+            <input type="submit" value="Send" class="btn" />
+          </form>
+        </div>
+      </div>
+    </div>
+    <footer>
+        <p>&copy; 2024 All rights reserved | Hivaani</p>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.js"></script>
+    <script src="{{ url_for('static', filename='js/contact/contact.js') }}"></script>
+  </body>
+</html>

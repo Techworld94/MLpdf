@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hivaani</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pricing/styles.css') }}">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&family=Ubuntu&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="navbar">
+          <div class="navbar-logo">
+            <a href="/">Hivaani</a>
+          </div>
+          <ul class="navbar-links" id="navbar-links">
+            <li><a href="/about">Home</a></li>
+            <li><a href="/pricing">Pricing</a></li>
+            <li><a href="/contact">Contact</a></li>
+          </ul>
+          <div class="navbar-toggle" id="navbar-toggle">
+            <span class="toggle-bar"></span>
+            <span class="toggle-bar"></span>
+            <span class="toggle-bar"></span>
+          </div>
+        </nav>
+    </header>
+    <div class="container">
+        <h1>Choose your plan</h1>
+        <div class="price-row">
+            <div class="box">
+                <h2>Free</h2>
+                <h1>0€ <span>/month</span></h1>
+                <ul>
+                    <li>1 file per upload</li>
+                    <li>PDF with 1 page</li>
+                    <li>Maximum 2 MB</li>
+                    <li>Text-only analysis</li>
+                    <li>Hugging Face AI Model</li>
+                    <li>English only Support</li>
+                </ul>
+                <div class="btn">Add to Cart</div>
+            </div>
+            <div class="box">
+                <h2>Basic</h2>
+                <h1>29€ <span>/month</span></h1>
+                <ul>
+                    <li>5 files per upload</li>
+                    <li>PDF with 10 pages</li>
+                    <li>Maximum 10 MB</li>
+                    <li>Text-only analysis</li>
+                    <li>Open AI & Gemini support</li>
+                    <li>English & Dutch support</li>
+                </ul>
+                <div class="btn">Add to Cart</div>
+            </div>
+            <div class="box">
+                <h2>Premium</h2>
+                <h1>59€ <span>/month</span></h1>
+                <ul>
+                    <li>Unlimited uploads</li>
+                    <li>Unlimited pages</li>
+                    <li>Unlimited file size</li>
+                    <li>Text-only analysis</li>
+                    <li>Open AI & Gemini support</li>
+                    <li>English & Dutch Support</li>
+                </ul>
+                <div class="btn">Add to Cart</div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2024 All rights reserved | Hivaani</p>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.js"></script>
+    <script src="{{ url_for('static', filename='js/pricing/pricing.js') }}"></script>
+</body>
+</html>
