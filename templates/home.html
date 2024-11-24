@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/home/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <title>Hivaani</title>
 </head>
@@ -15,26 +16,6 @@
                 <button class="new-chat"><i class="fa fa-plus"></i> New chat</button>
                 <button class="hide-sidebar"><i class="fa fa-chevron-left"></i></button>
             </div>
-            <ul class="conversations">
-                <li class="grouping">Today</li>
-                <li class="active">
-                    <button class="conversation-button"><i class="fa fa-message fa-regular"></i> This is a conversation title</button>
-                    <div class="fade"></div>
-                    <div class="edit-buttons">
-                        <button><i class="fa fa-edit"></i></button>
-                        <button><i class="fa fa-trash"></i></button>
-                    </div>
-                </li>
-                <li class="grouping">Yesterday</li>
-                <li>
-                    <button class="conversation-button"><i class="fa fa-message fa-regular"></i> This is a conversation title</button>
-                    <div class="fade"></div>
-                    <div class="edit-buttons">
-                        <button><i class="fa fa-edit"></i></button>
-                        <button><i class="fa fa-trash"></i></button>
-                    </div>
-                </li>
-            </ul>
         </div>
         <div class="user-menu">
             <button>
@@ -43,10 +24,8 @@
                 <i class="fa fa-ellipsis dots"></i>
             </button>
             <ul>
-                <li><button>My plan</button></li>
-                <li><button>Custom instructions</button></li>
-                <li><button>Settings &amp; Beta</button></li>
-                <li><button onclick="location.href='{{ url_for('logout') }}'" >Log out</button></li>
+                <li><button id="settings-btn"><i class="fas fa-cogs"></i> Settings</button></li>
+                <li><button onclick="location.href='{{ url_for('logout') }}'"><i class="fas fa-sign-out-alt"></i> Log out</button></li>
             </ul>
         </div>
     </nav>
@@ -55,7 +34,7 @@
             <div class="model-selector">
                 <button class="Gemini selected">
                     <img src="{{ url_for('static', filename='images/gemini.svg') }}" alt="Gemini Icon" class="gemini-model-icon"> 
-                    Gemini 1.5 Pro
+                    Gemini
                     <div class="model-info">
                         <div class="model-info-box">
                             <p>Our fastest model, great for most every day tasks.</p>
@@ -64,9 +43,9 @@
                         </div>
                     </div>
                 </button>
-                <button class="gpt-4">
+                <!-- <button class="gpt-4">
                     <img src="{{ url_for('static', filename='images/openai.svg') }}" alt="openai Icon" class="openai-model-icon"> 
-                    GPT-4o
+                    GPT
                     <div class="model-info">
                         <div class="model-info-box">
                             <p>Our most capable model, great for creative stuff.</p>
@@ -74,44 +53,11 @@
                             <p class="secondary">Available for Plus users.</p>
                         </div>
                     </div>
-                </button>
-                <button class="llama">
-                    <img src="{{ url_for('static', filename='images/meta.svg') }}" alt="meta Icon" class="meta-model-icon"> 
-                    llama 3.1 405B
-                    <div class="model-info">
-                        <div class="model-info-box">
-                            <p>Our most capable model, great for creative stuff.</p>
-
-                            <p class="secondary">Available for Plus users.</p>
-                        </div>
-                    </div>
-                </button>
+                </button> -->
             </div>
 
             <div class="logo">
                 Hivaani
-            </div>
-        </div>
-
-        <div class="view conversation-view">
-            <div class="model-name">
-                <i class="fa fa-bolt"></i> Default (GPT-3.5)
-            </div>
-            <div class="user message">
-                <div class="identity">
-                    <i class="user-icon">u</i>
-                </div>
-                <div class="content">
-                    <p>Hello, how are you?</p>
-                </div>
-            </div>
-            <div class="assistant message">
-                <div class="identity">
-                    <i class="gpt user-icon">G</i>
-                </div>
-                <div class="content">
-                    <p>I'm doing well, thank you!</p>
-                </div>
             </div>
         </div>
 
@@ -135,12 +81,72 @@
         </div>
     </main>
 
+    <!----------Customize Model------------>
+
+    <div id="settings-modal" class="modal">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h1>Settings</h1>
+                <span class="close-btn">&times;</span>
+            </div>
+            <div class="settings-body">
+                <div class="settings-side">
+                    <ul>
+                        <li class="settings-item active">
+                            <i class="fas fa-cog"></i> General
+                        </li>
+                    </ul>
+                </div>
+                <div class="settings-main-content">
+                    <div class="content-section active">
+                        <div class="row">
+                            <label>Plan</label>
+                            <select id="plan-dropdown">
+                                <option>Free</option>
+                                <option>Plus</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <label>Language</label>
+                            <select id="lang">
+                                <option>Auto-detect</option>
+                                <option>English</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <label>Delete all chats</label>
+                            <button class="danger" id="delete-chats-button">Delete Chats</button>
+                        </div>
+                        <div class="row">
+                            <label>Delete Account</label>
+                            <button class="delete-acc">Delete Account</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>        
+
+    <!----- confirmation Model------------>
+
+    <div id="confirmation-modal" class="confirm-modal" style="display:none;">
+        <div class="confirm-modal-content">
+            <h4>Are you sure you want to delete all chats?</h4>
+            <p>This action cannot be undone.</p>
+        </div>
+        <div class="confirm-modal-footer">
+            <button id="cancel-delete" class="btn cancel-delete">Cancel</button>
+            <button id="confirm-delete" class="btn confirm-delete">Proceed</button>
+        </div>
+    </div>
+
     <!--------Loader--------------->
     <div id="loader" style="display: none;">
         <div class="spinner"></div>
         <p>Processing...</p>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.js"></script>
     <script src="{{ url_for('static', filename='js/home/home.js') }}"></script>
 </body>
 </html>

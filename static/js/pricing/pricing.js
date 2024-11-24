@@ -7,4 +7,8 @@ document.addEventListener("DOMContentLoaded", function () {
         navbarLinks.classList.toggle("active");
         toggleIcon.classList.toggle("active"); 
     });
+
+    //////////////////////////////// Stripe Payment ////////////////////////////////////
+
+    
 });

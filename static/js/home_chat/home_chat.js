@@ -63,6 +63,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     });
 
+    ////////////////////////////////////////////////// Toastify message //////////////////////////////////////////////////////
+
+    function showToast(message, type = 'success') {
+        Toastify({
+            text: message,
+            duration: 3000,
+            close: true, 
+            gravity: "top",
+            position: "right",
+            backgroundColor: type === 'error' ? "#FF5F6D" : "#00b09b",
+            stopOnFocus: true,
+        }).showToast();
+    }
+
    /////////////////////////////////////////////////// Clear the conversation ////////////////////////////////////////////////
 
     function clearConversationView() {
@@ -303,6 +317,138 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
             handleSendMessage();
+        }
+    });
+
+
+    ///////////////////////////////////// Customize Model for Settings //////////////////////////////////////////////////////////////
+
+    const settingsBtn = document.getElementById("settings-btn");
+    const modal = document.getElementById("settings-modal");
+    const closeModal = document.querySelector(".close-btn");
+    const sidebarItems = document.querySelectorAll(".settings-item");
+    const contentSections = document.querySelectorAll(".content-section");
+    const planDropdown = document.getElementById('plan-dropdown');
+    const langDropdown = document.getElementById('lang');
+    
+    const deleteChatsButton = document.getElementById('delete-chats-button');
+    const deleteAccountButton = document.querySelector('.delete-acc');
+    const confirmationModal = document.getElementById('confirmation-modal');
+    const modalContent = document.querySelector('.confirm-modal-content h4');
+    const modalDescription = document.querySelector('.confirm-modal-content p');
+    const cancelButton = document.getElementById('cancel-delete');
+    const proceedButton = document.getElementById('confirm-delete');
+    
+    async function fetchUserCredentials() {
+        try {
+            const response = await fetch('/user_plan');
+            const data = await response.json();
+            if (data.subscription) {
+                if (data.subscription === "Plus") {
+                    planDropdown.value = "Plus";
+                    langDropdown.value = "Auto-detect" 
+                } else {
+                    planDropdown.value = "Free"; 
+                    langDropdown.value = "English"
+                }
+            } else {
+                showToast('Error: Subscription data not found', 'error');
+            }
+        } catch (error) {
+            showToast("Error fetching user credentials: " + error.message, 'error');
+        }
+    }
+
+    fetchUserCredentials();
+
+    settingsBtn.addEventListener("click", () => {
+        modal.style.display = "block";
+    });
+
+    closeModal.addEventListener("click", () => {
+        modal.style.display = "none";
+    });
+
+    window.addEventListener("click", (event) => {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+
+    sidebarItems.forEach(item => {
+        item.addEventListener("click", () => {
+            sidebarItems.forEach(i => i.classList.remove("active"));
+            contentSections.forEach(section => section.classList.remove("active"));
+            item.classList.add("active");
+            const targetId = item.getAttribute("data-target");
+            document.getElementById(targetId).classList.add("active");
+        });
+    });
+
+    sidebarItems[0].classList.add("active");
+    contentSections[0].classList.add("active");    
+
+    deleteChatsButton.addEventListener('click', function () {
+        modalContent.textContent = "Are you sure you want to delete all chats?";
+        modalDescription.textContent = "This action cannot be undone.";
+        proceedButton.dataset.action = "deleteChats";
+        confirmationModal.style.display = 'block';
+    });
+
+    deleteAccountButton.addEventListener('click', function () {
+        modalContent.textContent = "Are you sure you want to delete your account?";
+        modalDescription.textContent = "This action will permanently delete your account.";
+        proceedButton.dataset.action = "deleteAccount";
+        confirmationModal.style.display = 'block';
+    });
+
+    cancelButton.addEventListener('click', function () {
+        confirmationModal.style.display = 'none';
+    });
+
+    proceedButton.addEventListener('click', async function () {
+        confirmationModal.style.display = 'none';
+        const action = proceedButton.dataset.action;
+
+        try {
+            let response;
+            if (action === "deleteChats") {
+                response = await fetch('/delete_chats', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            } else if (action === "deleteAccount") {
+                response = await fetch('/delete-account', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            }
+
+            const result = await response.json();
+            if (response.ok) {
+                showToast(
+                    action === "deleteChats" 
+                    ? 'All chats deleted successfully!' 
+                    : 'Account deleted successfully!', 
+                    'success'
+                );
+                
+                if (action === "deleteChats") {
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                }
+    
+                if (action === "deleteAccount") {
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                }
+            } else {
+                showToast(result.error || 'Action failed. Please try again.', 'error');
+            }
+        } catch (error) {
+            showToast('An error occurred. Please try again.', 'error');
         }
     });
 });

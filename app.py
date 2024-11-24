@@ -4,6 +4,7 @@ import asyncio
 import uuid
 import json
 from datetime import datetime, timezone
+import stripe
 from flask import Flask, render_template,jsonify,request,redirect,url_for
 from flask_cors import CORS
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -105,7 +106,9 @@ def signup():
     new_user = {
         'username': username,
         'password': hashed_password,
-        'email': email
+        'email': email,
+        "created_at": datetime.now(timezone.utc),
+        'plan': 'Free'
     }
     users_collection.insert_one(new_user)
     return jsonify({'success': 'User registered successfully'})
@@ -265,7 +268,7 @@ async def query_bot():
                     {"role": "user", "content": user_question},
                     {"role": "bot", "content": response}
                 ],
-                "created_at": datetime.utcnow()
+                "created_at": datetime.now(timezone.utc)
             }
             chat_collection.insert_one(new_session)
             return jsonify({"response": response, "username": username, "session_id": session_id, "title": new_session["title"]})
@@ -294,6 +297,50 @@ def get_chat(session_id):
     if chat_data:
         return jsonify({"messages": chat_data["messages"]})
     return jsonify({"error": "Chat not found"}), 404
+
+####################### Stripe Payment ###############################
+
+####################### Fetch subscription status ####################
+
+@app.route('/user_plan', methods=['GET'])
+def get_user_credentials():
+    username = session_manager.get_logged_in_user()
+    if not username:
+        return jsonify({"error": "User not logged in"}), 400 
+    user = users_collection.find_one({"username": username})
+    
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    
+    subscription = user.get("plan")
+    
+    if not subscription:
+        return jsonify({"error": "subscription not found"}), 404
+    
+    return jsonify({"username": username, "subscription": subscription})
+
+######################## Delete Many Chats and account ##############################
+
+@app.route('/delete_chats', methods=['DELETE'])
+def delete_chats():
+    username = session_manager.get_logged_in_user()
+    if not username:
+        return jsonify({"error": "User not logged in"}), 400
+
+    vector_collection.delete_many({"username": username})
+    chat_collection.delete_many({"username": username})
+    return jsonify({"message": "Chats deleted successfully"})
+
+@app.route('/delete-account', methods=['DELETE'])
+def delete_account():
+    username = session_manager.get_logged_in_user()
+    if not username:
+        return jsonify({"error": "User not logged in"}), 400
+
+    users_collection.delete_one({"username": username})
+    vector_collection.delete_many({"username": username})
+    chat_collection.delete_many({"username": username})
+    return jsonify({"message": "Account deleted successfully"})
 
 ######################## Logout #############################
 
