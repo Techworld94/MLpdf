@@ -272,7 +272,12 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
             hideLoader();
             if (Array.isArray(data.results)) {
+                const successCount = data.results.filter(result => result.status === "✅ Text extracted successfully").length;
+                sessionStorage.setItem('successCount', successCount);
+                console.log(`Number of files with successful text extraction: ${successCount}`);
                 showModal(data.results);
+            } else if (data.error) {
+                showToast(`${data.error}`, 'error');
             } else {
                 showToast("Error: Unexpected response from the server", 'error');
             }
@@ -336,15 +341,24 @@ document.addEventListener("DOMContentLoaded", function () {
             const fileInput = document.getElementById('file-upload');
             const files = fileInput.files;
 
-            const formData = new FormData();
-            [...files].forEach(file => {
-                formData.append('files[]', file);
-                console.log(`File uploaded: ${file.name}`);
+            if (!files.length) {
+                showToast("Please upload at least one file.", "error");
+                return;
+            }        
+
+            const successCount = parseInt(sessionStorage.getItem('successCount'), 10) || 0;
+                if (successCount > 0) {
+                    const formData = new FormData();
+                    [...files].forEach(file => {
+                        formData.append('files[]', file);
+                        console.log(`File uploaded: ${file.name}`);
+                    });
+
+                    startProcessing(formData);
+                } else {
+                    showToast("There is no text generated from any of the files uploaded.", "error");
+                }
             });
-
-            startProcessing(formData);
-
-        });
 
         function showLoader_2() {
             if (!document.getElementById('loader')) {
@@ -354,7 +368,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.body.appendChild(loader);
                 document.addEventListener('keydown', handleLoaderKeydown);
             }
-        }
+        } 
 
         async function startProcessing(formData) {
             showLoader_2();
@@ -366,6 +380,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 const data = await response.json();
                 if (data.session_url) {
                     window.location.href = data.session_url;
+                } else if (data.error) {
+                    showToast(data.error, 'error');
                 } else {
                     showToast('Error processing files.', 'error');
                 }
@@ -374,13 +390,57 @@ document.addEventListener("DOMContentLoaded", function () {
             } finally {
                 hideLoader();
             }
-        }
-    
+        }        
+
         document.getElementById('cancel-btn').addEventListener('click', () => {
             removeModal();
         });
     
         document.addEventListener('keydown', handleKeydown);
     }       
+
+    ///////////////////////////////////////////// Make a Stripe Payment //////////////////////////////////////////////////
+    const username = document.getElementById("userMenu").getAttribute("data-username");
+
+    document.getElementById('plan-dropdown').addEventListener('change', function () {
+        const selectedPlan = this.value;
+        if (selectedPlan === "Plus") {
+            showLoader();
+            redirectToStripe();
+        }
+    });
+    
+    async function redirectToStripe() {
+        try {
+            const response = await fetch('/create-checkout-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    plan: 'Plus',
+                    username: username
+                }),
+            });
+    
+            if (!response.ok) {
+                throw new Error('Failed to create Stripe session');
+            }
+    
+            const { sessionId, status } = await response.json();
+            console.log("Session ID:", sessionId, "Status:", status);
+            if (status === 'success') {
+                const stripe = Stripe('pk_test_51QMqgQGAuM9oavUCVFhplM1y5cIz1LPNGS5ZWNDD8iBZCXNjjC54AdAfNvV6qLa6PzmSlTkMfDUNVqHOllrHYV2000YFtB5c0b');
+                await stripe.redirectToCheckout({ sessionId });
+            } else {
+                showToast('Payment failed, please try again.', 'error');
+            }
+        } catch (error) {
+            console.error('Error redirecting to Stripe:', error.message);
+            showToast('Error redirecting to payment page: ' + error.message, 'error');
+        } finally {
+            hideLoader()
+        }
+    }
 
 });

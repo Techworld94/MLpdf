@@ -9,14 +9,17 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain_community.vectorstores import FAISS
 import os
 from langdetect import detect
+from Subscriptions.pricing import PricingValidator
 
 class QueryBot:
-    def __init__(self, faiss_index_path):
+    def __init__(self, faiss_index_path, subscription_type):
         """
         Initialize the QueryBot instance with the path to the FAISS index.
         """
         self.faiss_index_path = faiss_index_path
         self.vector_store = None
+        self.subscription_type = subscription_type
+        self.pricing_validator = PricingValidator(subscription_type)
 
     def load_vector_store(self, embedding_model):
         """
@@ -51,10 +54,20 @@ class QueryBot:
         """
         Generate an answer based on the user question using the vector store and AI model.
         """
+        print(f"Subscription Type: {self.subscription_type}")
         print(f"Vector Store: {self.vector_store}")
 
         if not self.vector_store:
             raise ValueError("Vector store not loaded. Please call load_vector_store() first.")
+        
+        detected_language = self.detect_language(user_question)
+        if self.subscription_type == "Free" and detected_language != "en":
+            return (
+                "❌ Oops! This subscription level only supports English queries. "
+                "✨ Upgrade to Plus to unlock support for all languages and other premium features! 🚀"
+            )
+        elif self.subscription_type == "Plus" and detected_language != "en":
+            print("Plus subscription detected. Non-English query allowed.")
         
         try:
             docs = self.vector_store.similarity_search(user_question)
@@ -64,8 +77,6 @@ class QueryBot:
         
         if len(docs) == 0:
             return "No relevant information found in the documents."
-        
-        detected_language = self.detect_language(user_question)
 
         prompt_template = """
         Use the context below to answer the question in the same language as the question. If the context doesn't directly answer the question, 
@@ -84,6 +95,5 @@ class QueryBot:
 
         # Run the chain to generate the response
         response = chain({"input_documents": docs, "question": user_question}, return_only_outputs=True)
-        
         print(f"Generated Response: {response['output_text']}")
         return response["output_text"]

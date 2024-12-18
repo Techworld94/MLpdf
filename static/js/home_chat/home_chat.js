@@ -154,7 +154,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (isTyping) {
             contentDiv.innerHTML = `<p><span class="typing-text">Typing</span><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></p>`;
         } else {
-            contentDiv.innerHTML = `<p>${content}</p>`;
+            //contentDiv.innerHTML = `<p>${content}</p>`;
+            contentDiv.innerHTML = formatContent(content);
         }
 
         messageContainer.appendChild(identity);
@@ -163,6 +164,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         conversationView.scrollTop = conversationView.scrollHeight;
    
         return contentDiv;
+    }
+
+    /////////////////////////////////////////////////////////// BOT Response Content Formatting ///////////////////////////////////////////
+
+    /**
+    * Formats the content to detect numbered lists and removes redundant numbering.
+    * @param {string} content - The raw content from the bot.
+    * @returns {string} - The formatted HTML string.
+    */
+    function formatContent(content) {
+        if (/\d+\.\s/.test(content)) {
+            const lines = content.split(/\n/);
+            const formattedLines = lines.map(line => {
+                return line.match(/^\d+\.\s/) ? `<li>${line.replace(/^\d+\.\s/, '')}</li>` : `<p>${line}</p>`;
+            });
+
+            return formattedLines.join('').replace(/(<li>.*<\/li>)/gs, '<ol>$1</ol>');
+        }
+
+        return `<p>${content.replace(/\n/g, '<br>')}</p>`;
     }
 
     /////////////////////////////////////////////////////////// Function to add Sidebar titles ////////////////////////////////////////////
@@ -297,7 +318,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const data = await response.json();
 
             if (data.response) {
-                typingIndicatorContent.innerHTML = `<p>${data.response}</p>`;
+                typingIndicatorContent.innerHTML = formatContent(data.response);
                 if (data.title) {
                     addConversationToSidebar(data.title, sessionId, new Date().toISOString().split("T")[0]);
                 }
@@ -319,7 +340,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             handleSendMessage();
         }
     });
-
 
     ///////////////////////////////////// Customize Model for Settings //////////////////////////////////////////////////////////////
 

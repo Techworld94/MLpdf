@@ -12,10 +12,12 @@ from Misc.conn import MongoDBConnector
 from Misc.session import SessionManager
 from ML_Models.pdf_extractor import PDFExtractor
 from ML_Models.ML_Logic import QueryBot
+from Subscriptions.pricing import PricingValidator
 
 app = Flask(__name__)
 app.secret_key = os.getenv("Secret_Key")
 base_directory = os.getenv("Base_Dir")
+stripe.api_key = os.getenv("STRIPE_KEY")
 CORS(app)
 
 ##################### Initialize Session ####################
@@ -116,30 +118,52 @@ def signup():
 ######################## Forgot Password link ########################
 
 
-######################## Uploaded Files Validation #######################
+######################## Uploaded Files Validation Based On Subscription #######################
 
 @app.route('/validate_files', methods=['POST'])
 def validate_files():
     files = request.files.getlist('files[]')
-    if not files:
-        return jsonify({"results": []})
+    username = session_manager.get_logged_in_user()
+    user_data = users_collection.find_one({"username": username})
+    subscription_type = user_data.get("plan")
+
+    validator = PricingValidator(subscription_type)
+
+    is_valid, error_message = validator.validate_file_count(len(files))
+    if not is_valid:
+        return jsonify({"error": error_message}), 400
 
     extractor = PDFExtractor()
     results = []
 
     for file in files:
-        file_status = {"filename": file.filename} 
-
+        file_status = {"filename": file.filename}
+        is_valid, error_message = validator.validate_file_size(file)
+        
+        if not is_valid:
+            file_status["status"] = error_message
+            results.append(file_status)
+            continue
+        
         if not file.filename.endswith('.pdf'):
-            file_status["status"] = "❌ file extension is incorrect"
+            file_status["status"] = "❌ File extension is incorrect"
+            results.append(file_status)
+            continue
+        
+        file.seek(0)
+        is_valid, error_message = validator.validate_page_count(io.BytesIO(file.read()))
+        
+        if not is_valid:
+            file_status["status"] = error_message
             results.append(file_status)
             continue
 
         try:
+            file.seek(0)
             file_stream = io.BytesIO(file.read())
             extracted_text = asyncio.run(extractor._extract_text_from_pdf(file_stream))
             if extracted_text.strip():
-                file_status["status"] = "✅ text extracted successfully"
+                file_status["status"] = "✅ Text extracted successfully"
             else:
                 file_status["status"] = "❌ No text extracted. File may be corrupted."
         except Exception as e:
@@ -148,6 +172,7 @@ def validate_files():
         results.append(file_status)
 
     return jsonify({"results": results})
+
 
 ######################## Process Files #########################################
 
@@ -232,6 +257,9 @@ async def query_bot():
         session_id = data.get('session_id')
         user_question = data.get('question')
         username = data.get('username')
+
+        user_data = users_collection.find_one({"username": username})
+        subscription_type = user_data.get("plan")
         
         if not session_id or not user_question:
             return jsonify({"error": "Missing session_id or question"}), 400
@@ -251,7 +279,7 @@ async def query_bot():
         if not os.path.exists(faiss_index_path):
             return jsonify({"error": f"FAISS index file not found at {faiss_index_path}"}), 404
 
-        bot = QueryBot(faiss_index_path=faiss_index_path)       
+        bot = QueryBot(faiss_index_path=faiss_index_path, subscription_type=subscription_type)       
         bot.load_vector_store(embedding_model="models/text-embedding-004")
         response = await bot.answer_question(user_question, chat_model="gemini-1.5-pro")
         print("Bot Response:", response)
@@ -300,6 +328,86 @@ def get_chat(session_id):
 
 ####################### Stripe Payment ###############################
 
+@app.route('/create-checkout-session', methods=['POST'])
+def create_checkout_session():
+    try:
+        data = request.json
+        plan = data.get('plan')
+        username = data.get('username')
+
+        if plan != 'Plus':
+            return jsonify({'error': 'Invalid plan selected'}), 400
+
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[
+                {
+                    'price_data': {
+                        'currency': 'eur',
+                        'product_data': {
+                            'name': 'Subscription Plan - Plus',
+                        },
+                        'unit_amount': 2999,
+                    },
+                    'quantity': 1,
+                },
+            ],
+            mode='payment',
+            success_url='http://localhost:4242/webhook',
+            cancel_url='http://127.0.0.1:4242/cancel',
+            metadata={
+                'plan': 'Plus',
+                'username': username
+            }
+        )
+
+        return jsonify({'sessionId': session.id, 'status': 'success'})
+
+    except Exception as e:
+        print(f"Error creating checkout session: {e}")
+        return jsonify({'error': str(e)}), 500
+    
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    endpoint_secret = os.getenv('WEBHOOK_ENDPOINT')
+    event = None
+    payload = request.data
+    sig_header = request.headers['STRIPE_SIGNATURE']
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except ValueError as e:
+        print('Invalid payload', e)
+        return jsonify({'error': 'Invalid payload'}), 400
+    except stripe.error.SignatureVerificationError as e:
+        print('Invalid signature', e)
+        return jsonify({'error': 'Invalid signature'}), 400
+
+    if event['type'] == 'payment_intent.succeeded':
+        session = event['data']['object']
+        print(session)
+        
+        update_result = users_collection.update_one(
+            {'username': session['metadata']['username']},
+            {
+                '$set': {
+                    'plan': session['metadata']['plan'],
+                    'Plan_Update_Date': datetime.now(timezone.utc)
+                }
+            }
+        )
+
+        if update_result.modified_count > 0:
+            print(f"Successfully updated user {session['metadata']['username']}")
+        else:
+            print(f"User {session['metadata']['username']} not found or already updated")
+
+    return jsonify({'status': 'success'})
+    
+
 ####################### Fetch subscription status ####################
 
 @app.route('/user_plan', methods=['GET'])
@@ -341,6 +449,18 @@ def delete_account():
     vector_collection.delete_many({"username": username})
     chat_collection.delete_many({"username": username})
     return jsonify({"message": "Account deleted successfully"})
+
+######################## Success ############################
+
+@app.route('/success')
+def success():
+    return render_template('success.html')
+
+######################## Cancel ############################
+
+@app.route('/cancel')
+def cancel():
+    return render_template('cancel.html')
 
 ######################## Logout #############################
 

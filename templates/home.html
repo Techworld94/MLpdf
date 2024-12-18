@@ -17,7 +17,7 @@
                 <button class="hide-sidebar"><i class="fa fa-chevron-left"></i></button>
             </div>
         </div>
-        <div class="user-menu">
+        <div class="user-menu" id="userMenu" data-username="{{ username }}">
             <button>
                 <i class="user-icon">{{ username[0].upper() }}</i>
                 {{username}}
@@ -43,7 +43,7 @@
                         </div>
                     </div>
                 </button>
-                <!-- <button class="gpt-4">
+                <!--<button class="gpt-4">
                     <img src="{{ url_for('static', filename='images/openai.svg') }}" alt="openai Icon" class="openai-model-icon"> 
                     GPT
                     <div class="model-info">
@@ -53,7 +53,7 @@
                             <p class="secondary">Available for Plus users.</p>
                         </div>
                     </div>
-                </button> -->
+                </button>-->
             </div>
 
             <div class="logo">
@@ -147,6 +147,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
     <script src="{{ url_for('static', filename='js/home/home.js') }}"></script>
 </body>
 </html>
