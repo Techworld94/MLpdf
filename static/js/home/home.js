@@ -34,16 +34,16 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    const message_box = document.querySelector("#message");
+    // const message_box = document.querySelector("#message");
 
-    message_box.addEventListener("keyup", function() {
-        message_box.style.height = "auto";
-        let height = message_box.scrollHeight + 2;
-        if( height > 200 ) {
-            height = 200;
-        }
-        message_box.style.height = height + "px";
-    });
+    // message_box.addEventListener("keyup", function() {
+    //     message_box.style.height = "auto";
+    //     let height = message_box.scrollHeight + 2;
+    //     if( height > 200 ) {
+    //         height = 200;
+    //     }
+    //     message_box.style.height = height + "px";
+    // });
 
     function show_view( view_selector ) {
         document.querySelectorAll(".view").forEach(view => {
@@ -77,6 +77,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }).showToast();
     }
 
+    ////////////////////// Date Format - dd/mm/yyyy ////////////////////////////
+
+    function formatDate(utcDateString) {
+        const date = new Date(utcDateString);
+        return date.toLocaleDateString("en-GB");
+    }
+
     ////////////////////// Customize Model /////////////////////////////////////
 
     const settingsBtn = document.getElementById("settings-btn");
@@ -99,17 +106,90 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             const response = await fetch('/user_plan');
             const data = await response.json();
+            const settingsContent = document.querySelector(".settings-content");
+
+            function applyDynamicStyles(subscription) {
+                const screenWidth = window.innerWidth;
+    
+                if (subscription === "Plus") {
+                    if (screenWidth <= 570) {
+                        settingsContent.style.height = "77%";
+                        document.querySelectorAll(".row input").forEach(input => {
+                            input.style.width = "calc(100% - 50px)";
+                        });
+                    } else if (screenWidth <= 870) {
+                        settingsContent.style.height = "87%";
+                        document.querySelectorAll(".row input").forEach(input => {
+                            input.style.width = "calc(100% - 60px)";
+                        });
+                    } else if (screenWidth <= 1270) {
+                        settingsContent.style.height = "87%";
+                        document.querySelectorAll(".row input").forEach(input => {
+                            input.style.width = "calc(100% - 60px)";
+                        });    
+                    } else {
+                        settingsContent.style.height = "77%";
+                    }
+                } else if (subscription === "Free") {
+                    if (screenWidth <= 570) {
+                        settingsContent.style.height = "auto";
+                    } else if (screenWidth <= 870) {
+                        settingsContent.style.height = "75%";
+                    } else {
+                        settingsContent.style.height = "65%";
+                    }
+                }
+            }
+
             if (data.subscription) {
                 if (data.subscription === "Plus") {
                     planDropdown.value = "Plus";
                     langDropdown.value = "Auto-detect" 
+
+                    const settingsMainContent = document.querySelector(".settings-main-content .content-section.active");
+                    if (!document.getElementById("plan-update-date-row")) {
+                        const updateDateRow = document.createElement("div");
+                        updateDateRow.className = "row";
+                        updateDateRow.id = "plan-update-date-row";
+                        updateDateRow.innerHTML = `
+                            <label>Plan Update Date</label>
+                            <input type="text" id="plan-update-date" value="${data.plan_update_date ? formatDate(data.plan_update_date) : 'N/A'}" readonly>
+                        `;
+                        settingsMainContent.appendChild(updateDateRow);
+                    }
+
+                    if (!document.getElementById("plan-expiry-date-row")) {
+                        const expiryDateRow = document.createElement("div");
+                        expiryDateRow.className = "row";
+                        expiryDateRow.id = "plan-expiry-date-row";
+                        expiryDateRow.innerHTML = `
+                            <label>Plan Expiry Date</label>
+                            <input type="text" id="plan-expiry-date" value="${data.plan_expiry_date ? formatDate(data.plan_expiry_date) : 'N/A'}" readonly>
+                        `;
+                        settingsMainContent.appendChild(expiryDateRow);
+                    }
+
+                    applyDynamicStyles("Plus");
+
                 } else {
                     planDropdown.value = "Free"; 
                     langDropdown.value = "English"
+
+                    const updateDateRow = document.getElementById("plan-update-date-row");
+                    const expiryDateRow = document.getElementById("plan-expiry-date-row");
+                    if (updateDateRow) updateDateRow.remove();
+                    if (expiryDateRow) expiryDateRow.remove();
+
+                    applyDynamicStyles("Free");
                 }
             } else {
                 showToast('Error: Subscription data not found', 'error');
             }
+            window.addEventListener("resize", () => {
+                if (data.subscription) {
+                    applyDynamicStyles(data.subscription);
+                }
+            });
         } catch (error) {
             showToast("Error fetching user credentials: " + error.message, 'error');
         }
