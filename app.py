@@ -186,7 +186,6 @@ def process_files():
     extractor = PDFExtractor()
     session_id = str(uuid.uuid4())
     save_directory = os.path.join(base_directory, username)
-    print(save_directory)
     os.makedirs(save_directory, exist_ok=True)
     faiss_index_path = os.path.join(save_directory, session_id)
 
@@ -460,4 +459,4 @@ def logout():
 
 if __name__ == '__main__':
     print('Backend is running!!!')
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True)
