@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Success - Hivaani</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/success/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="success-container">
+        <img src="https://cdn-icons-png.flaticon.com/512/845/845646.png" alt="Success Icon" />
+        <h1>Payment Successful!</h1>
+        <p>Thank you! You now have Plus Subscription access to all premium features.</p>
+        <a href="javascript:void(0);" id="return-dashboard">Return to Dashboard</a>
+    </div>
+
+    <div class="emoji-container"></div>
+
+    <script src="{{ url_for('static', filename='js/success/success.js') }}"></script>
+</body>
+</html>

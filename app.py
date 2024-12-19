@@ -3,7 +3,7 @@ import io
 import asyncio
 import uuid
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone,timedelta
 import stripe
 from flask import Flask, render_template,jsonify,request,redirect,url_for
 from flask_cors import CORS
@@ -186,6 +186,7 @@ def process_files():
     extractor = PDFExtractor()
     session_id = str(uuid.uuid4())
     save_directory = os.path.join(base_directory, username)
+    print(save_directory)
     os.makedirs(save_directory, exist_ok=True)
     faiss_index_path = os.path.join(save_directory, session_id)
 
@@ -333,7 +334,6 @@ def create_checkout_session():
     try:
         data = request.json
         plan = data.get('plan')
-        username = data.get('username')
 
         if plan != 'Plus':
             return jsonify({'error': 'Invalid plan selected'}), 400
@@ -353,13 +353,9 @@ def create_checkout_session():
                 },
             ],
             mode='payment',
-            success_url='http://localhost:4242/webhook',
-            cancel_url='http://127.0.0.1:4242/cancel',
-            metadata={
-                'plan': 'Plus',
-                'username': username
-            }
-        )
+            success_url='http://127.0.0.1:5000/success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url='http://127.0.0.1:5000/cancel?session_id={CHECKOUT_SESSION_ID}',
+            )
 
         return jsonify({'sessionId': session.id, 'status': 'success'})
 
@@ -367,47 +363,33 @@ def create_checkout_session():
         print(f"Error creating checkout session: {e}")
         return jsonify({'error': str(e)}), 500
     
+####################### Update plan and other details in DB After stripe payment success##############################
 
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    endpoint_secret = os.getenv('WEBHOOK_ENDPOINT')
-    event = None
-    payload = request.data
-    sig_header = request.headers['STRIPE_SIGNATURE']
+@app.route('/update-plan', methods=['POST'])
+def update_plan():
+    data = request.json
+    plan = data.get('plan')
+    username = session_manager.get_logged_in_user() 
+    plan_update_date = datetime.fromisoformat(data.get('plan_update_date'))
+    plan_expiry_date = datetime.fromisoformat(data.get('plan_expiry_date'))
 
-    try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, endpoint_secret
-        )
-    except ValueError as e:
-        print('Invalid payload', e)
-        return jsonify({'error': 'Invalid payload'}), 400
-    except stripe.error.SignatureVerificationError as e:
-        print('Invalid signature', e)
-        return jsonify({'error': 'Invalid signature'}), 400
+    if not username:
+        return jsonify({"error": "Username is required"}), 400
 
-    if event['type'] == 'payment_intent.succeeded':
-        session = event['data']['object']
-        print(session)
-        
-        update_result = users_collection.update_one(
-            {'username': session['metadata']['username']},
-            {
-                '$set': {
-                    'plan': session['metadata']['plan'],
-                    'Plan_Update_Date': datetime.now(timezone.utc)
-                }
-            }
-        )
+    result = users_collection.update_one(
+        {"username": username},
+        {"$set": {
+            "plan": plan,
+            "plan_update_date": plan_update_date,
+            "plan_expiry_date": plan_expiry_date
+        }}
+    )
 
-        if update_result.modified_count > 0:
-            print(f"Successfully updated user {session['metadata']['username']}")
-        else:
-            print(f"User {session['metadata']['username']} not found or already updated")
-
-    return jsonify({'status': 'success'})
+    if result.modified_count > 0:
+        return jsonify({"message": "Plan updated successfully"}), 200
+    else:
+        return jsonify({"error": "User not found or no changes made"}), 404
     
-
 ####################### Fetch subscription status ####################
 
 @app.route('/user_plan', methods=['GET'])
@@ -421,11 +403,18 @@ def get_user_credentials():
         return jsonify({"error": "User not found"}), 404
     
     subscription = user.get("plan")
+    plan_update_date = user.get("plan_update_date")
+    plan_expiry_date = user.get("plan_expiry_date")
     
     if not subscription:
         return jsonify({"error": "subscription not found"}), 404
     
-    return jsonify({"username": username, "subscription": subscription})
+    return jsonify({
+        "username": username,
+        "subscription": subscription,
+        "plan_update_date": plan_update_date,
+        "plan_expiry_date": plan_expiry_date
+    })
 
 ######################## Delete Many Chats and account ##############################
 
