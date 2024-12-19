@@ -13,4 +13,5 @@ pymupdf
 google-generativeai 
 python-dotenv
 asgiref
+gunicorn
 flask[async]
