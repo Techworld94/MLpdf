@@ -459,4 +459,4 @@ def logout():
 
 if __name__ == '__main__':
     print('Backend is running!!!')
-    app.run( ebug=True)
+    app.run(debug=True)
