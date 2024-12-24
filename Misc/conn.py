@@ -8,8 +8,8 @@ class MongoDBConnector:
     def __init__(self):
         """Initializes the MongoDB connection parameters."""
         load_dotenv() 
-        self.user = os.getenv("Mongo_Username")
-        self.password = os.getenv("Mongo_Password")
+        self.user = os.environ.get("Mongo_Username")
+        self.password = os.environ.get("Mongo_Password")
         self.encoded_username = quote_plus(self.user)
         self.encoded_password = quote_plus(self.password)
         self.uri = f"mongodb+srv://{self.encoded_username}:{self.encoded_password}@clusterm.rfbe7.mongodb.net/?retryWrites=true&w=majority&appName=ClusterM"
