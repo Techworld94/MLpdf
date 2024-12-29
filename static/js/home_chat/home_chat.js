@@ -378,22 +378,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     
                 if (subscription === "Plus") {
                     if (screenWidth <= 570) {
-                        settingsContent.style.height = "77%";
+                        settingsContent.style.height = "75%";
                         document.querySelectorAll(".row input").forEach(input => {
                             input.style.width = "calc(100% - 50px)";
                         });
                     } else if (screenWidth <= 870) {
-                        settingsContent.style.height = "87%";
+                        settingsContent.style.height = "82%";
                         document.querySelectorAll(".row input").forEach(input => {
                             input.style.width = "calc(100% - 60px)";
                         });
                     } else if (screenWidth <= 1270) {
-                        settingsContent.style.height = "87%";
+                        settingsContent.style.height = "82%";
                         document.querySelectorAll(".row input").forEach(input => {
                             input.style.width = "calc(100% - 60px)";
                         });    
                     } else {
-                        settingsContent.style.height = "77%";
+                        settingsContent.style.height = "75%";
                     }
                 } else if (subscription === "Free") {
                     if (screenWidth <= 570) {
