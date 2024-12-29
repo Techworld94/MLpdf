@@ -5,7 +5,7 @@ import uuid
 import json
 from datetime import datetime, timezone,timedelta
 import stripe
-from flask import Flask, render_template,jsonify,request,redirect,url_for
+from flask import Flask, render_template,jsonify,request,redirect,url_for,flash
 from flask_cors import CORS
 from werkzeug.security import check_password_hash, generate_password_hash
 from Misc.conn import MongoDBConnector
@@ -88,6 +88,16 @@ def login():
     if not check_password_hash(user['password'], password):
         return jsonify({'error': 'Incorrect password'})
     
+    current_date = datetime.utcnow()
+    if user.get('plan') == 'Plus' and 'plan_expiry_date' in user and user['plan_expiry_date']:
+        plan_expiry_date = user['plan_expiry_date']
+        if current_date >= plan_expiry_date:
+            users_collection.update_one(
+                {'username': username},
+                {'$set': {'plan': 'Free'},
+                 '$unset': {'plan_update_date': "", 'plan_expiry_date': ""}}
+            )
+    
     session_manager.set_user_session(username)
 
     return redirect(url_for('home'))
@@ -116,6 +126,7 @@ def signup():
     return jsonify({'success': 'User registered successfully'})
 
 ######################## Forgot Password link ########################
+
 
 
 ######################## Uploaded Files Validation Based On Subscription #######################
@@ -352,8 +363,8 @@ def create_checkout_session():
                 },
             ],
             mode='payment',
-            success_url='http://127.0.0.1:5000/success?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url='http://127.0.0.1:5000/cancel?session_id={CHECKOUT_SESSION_ID}',
+            success_url='http://127.0.0.1:8080/success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url='http://127.0.0.1:8080/cancel?session_id={CHECKOUT_SESSION_ID}',
             )
 
         return jsonify({'sessionId': session.id, 'status': 'success'})

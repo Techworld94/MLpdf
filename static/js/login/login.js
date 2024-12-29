@@ -59,8 +59,20 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector('.sign-in-form').addEventListener('submit', function (event) {
         event.preventDefault();
 
-        const username = document.querySelector('#Username').value;
-        const password = document.querySelector('#password').value;
+        const username = document.querySelector('#Username').value.trim();
+        const password = document.querySelector('#password').value.trim();
+
+        if (!username || !password) {
+            Toastify({
+                text: "Please fill the required fields.",
+                duration: 3000,
+                backgroundColor: "red",
+                close: true,
+                gravity: "top",
+                position: "right"
+            }).showToast();
+            return;
+        }
 
         const data = new FormData();
         data.append('username', username);
@@ -105,10 +117,22 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector('.sign-up-form').addEventListener('submit', function (event) {
         event.preventDefault(); 
     
-        const username = document.querySelector('#SignUpUsername').value;
-        const password = document.querySelector('#SignUpPassword').value;
-        const email = document.querySelector('#email').value;
-    
+        const username = document.querySelector('#SignUpUsername').value.trim();
+        const password = document.querySelector('#SignUpPassword').value.trim();
+        const email = document.querySelector('#email').value.trim();
+        
+        if (!username || !password ||!email) {
+            Toastify({
+                text: "Please fill the required fields.",
+                duration: 3000,
+                backgroundColor: "red",
+                close: true,
+                gravity: "top",
+                position: "right"
+            }).showToast();
+            return;
+        }
+
         const data = new FormData();
         data.append('username', username);
         data.append('password', password);
