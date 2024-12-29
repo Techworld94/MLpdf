@@ -10,7 +10,7 @@ import io
 
 load_dotenv()
 
-Google_api_key = os.getenv("GOOGLE_API_KEY")
+Google_api_key = os.getenv("_GOOGLE_API_KEY")
 genai.configure(api_key=Google_api_key)
 
 class PDFExtractor:
