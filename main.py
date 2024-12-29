@@ -15,9 +15,9 @@ from ML_Models.ML_Logic import QueryBot
 from Subscriptions.pricing import PricingValidator
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("Secret_Key")
-base_directory = os.environ.get("Base_Dir")
-stripe.api_key = os.environ.get("STRIPE_KEY")
+app.secret_key = os.environ.get("_SECRET_KEY")
+base_directory = os.environ.get("_BASE_DIR")
+stripe.api_key = os.environ.get("_STRIPE_KEY")
 CORS(app)
 
 ##################### Initialize Session ####################
