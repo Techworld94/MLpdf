@@ -187,11 +187,65 @@ document.addEventListener("DOMContentLoaded", function () {
           <p>Please enter your email to get the link, where you can reset the password</p>
           <div class="input-field">
             <i class="fas fa-envelope"></i>
-            <input type="email" placeholder="Email" />
+            <input id="email-input" type="email" placeholder="Email" />
           </div>
-          <input type="submit" value="Submit" class="btn solid" />
+          <input id="submit-forgot" type="button" value="Submit" class="btn solid" />
           <a href="#" class="back-to-login" id="back-to-login-link">Back to Login</a>
         `;
+
+        document.getElementById("submit-forgot").addEventListener("click", function() {
+            const email = document.getElementById("email-input").value;
+        
+            if (!email) {
+                Toastify({
+                    text: "Please enter your registered email address",
+                    duration: 3000,
+                    backgroundColor: "red",
+                    close: true,
+                    gravity: "top",
+                    position: "right"
+                }).showToast();
+                return;
+            }
+        
+            fetch('/forgot-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    Toastify({
+                        text: data.message,
+                        duration: 3000,
+                        backgroundColor: "green",
+                        close: true,
+                        gravity: "top",
+                        position: "right"
+                    }).showToast();
+                } else {
+                    Toastify({
+                        text: data.error,
+                        duration: 3000,
+                        backgroundColor: "red",
+                        close: true,
+                        gravity: "top",
+                        position: "right"
+                    }).showToast();
+                }
+            })
+            .catch(error => {
+                Toastify({
+                    text: "An unexpected error occurred.",
+                    duration: 3000,
+                    backgroundColor: "red",
+                    close: true,
+                    gravity: "top",
+                    position: "right"
+                }).showToast();
+            });
+        });        
   
         document.getElementById("back-to-login-link").addEventListener("click", function(event) {
           event.preventDefault();

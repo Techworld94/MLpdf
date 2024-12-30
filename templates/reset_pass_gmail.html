@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: #000;
+            color: #ffffff;
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .header img {
+            max-width: 100px;
+            margin-bottom: 15px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 26px;
+        }
+        .content {
+            padding: 25px 20px;
+        }
+        .content p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+        .btn-wrapper {
+            text-align: center;
+        }
+        
+        .btn {
+            display: inline-block;
+            text-decoration: none;
+            background-color: #383b42;
+            color: #ffffff;
+            padding: 15px 25px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+            margin-bottom : 10px;
+        }
+        .btn:hover {
+            background-color: #000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .footer {
+            text-align: center;
+            padding: 15px 20px;
+            background-color: #f9f9f9;
+            font-size: 13px;
+            color: #666;
+            border-top: 1px solid #eee;
+        }
+        @media only screen and (max-width: 570px) {
+            .header h1 {
+                font-size: 22px;
+            }
+            .content p {
+                font-size: 14px;
+            }
+            .btn {
+                font-size: 14px;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>Password Reset Request</h1>
+        </div>
+        <div class="content">
+            <p>Hello {{ username }},</p>
+            <p>You recently requested to reset your password. Please click the button below to proceed:</p>
+            <div class="btn-wrapper">
+                <a href="{{ reset_link }}" class="btn">Reset Password</a>
+            </div>
+            <p>If you didn't request a password reset, please ignore this email. </p>
+            <p><b>Note, this link is valid for 1 hour.<b></p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 Hivaani. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

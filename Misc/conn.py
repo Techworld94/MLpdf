@@ -12,7 +12,7 @@ class MongoDBConnector:
         self.password = os.environ.get("MONGO_PASSWORD")
         self.encoded_username = quote_plus(self.user)
         self.encoded_password = quote_plus(self.password)
-        self.uri = f"mongodb+srv://{self.encoded_username}:{self.encoded_password}@clusterm.rfbe7.mongodb.net/?retryWrites=true&w=majority&appName=ClusterM"
+        self.uri = f"mongodb+srv://{self.encoded_username}:{self.encoded_password}@clusterhv.rfbe7.mongodb.net/?retryWrites=true&w=majority&appName=ClusterHV"
         self.client = None
 
     def connect(self):
