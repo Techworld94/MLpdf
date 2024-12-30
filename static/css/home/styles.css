@@ -936,6 +936,7 @@ button.danger:hover, button.delete-acc:hover {
         grid-template-columns: 1fr 1.5fr;
         margin-bottom: 5px;
         align-items: center;
+        gap: 8px;
     }
 
 
