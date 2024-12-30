@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
                 if (subscription === "Plus") {
                     if (screenWidth <= 570) {
-                        settingsContent.style.height = "75%";
+                        settingsContent.style.height = "77%";
                         document.querySelectorAll(".row input").forEach(input => {
                             input.style.width = "calc(100% - 50px)";
                         });

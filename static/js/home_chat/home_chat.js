@@ -393,7 +393,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                             input.style.width = "calc(100% - 60px)";
                         });    
                     } else {
-                        settingsContent.style.height = "75%";
+                        settingsContent.style.height = "70%";
                     }
                 } else if (subscription === "Free") {
                     if (screenWidth <= 570) {
