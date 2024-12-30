@@ -895,7 +895,7 @@ button.danger:hover, button.delete-acc:hover {
         grid-template-columns: 1fr 2fr;
         align-items: center;
         margin-bottom: 5px;
-        gap: 10px;
+        padding: 5px;
     }
 
     label {
@@ -906,7 +906,7 @@ button.danger:hover, button.delete-acc:hover {
     input, select, button.danger, button.delete-acc {
         width: 90%;
         font-size: 14px;
-        padding: 10px;
+        padding: 5px;
     }
 
     .close-btn {
@@ -933,15 +933,15 @@ button.danger:hover, button.delete-acc:hover {
     }
 
     .row {
+        display: grid; 
         grid-template-columns: 1fr 1.5fr;
         margin-bottom: 5px;
         align-items: center;
-        gap: 8px;
+        padding: 7px;       
     }
 
-
     input, select, button.danger, button.delete-acc {
-        padding: 8px;
+        padding: 7px;
     }
 
 }
@@ -995,6 +995,35 @@ button.danger:hover, button.delete-acc:hover {
 
 .confirm-modal-footer .confirm-delete:hover {
     background-color: var(--color-files-upload);
+}
+
+@media screen and (max-width: 870px) {
+    .confirm-modal {
+        width: 300px;
+        padding: 15px;
+    }
+    .confirm-modal-footer .btn {
+        padding: 8px 16px;
+    }
+}
+
+
+@media screen and (max-width: 570px) {
+    .confirm-modal {
+        width: 90%;
+        padding: 10px;
+    }
+    .confirm-modal-footer {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    .confirm-modal-footer .btn {
+        padding: 8px 12px;
+        width: 50%;
+        text-align: center;
+        border-radius: 30px;
+    }
 }
 
 /*****************Toastify ***********************/

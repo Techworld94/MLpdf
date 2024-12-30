@@ -383,12 +383,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                             input.style.width = "calc(100% - 50px)";
                         });
                     } else if (screenWidth <= 870) {
-                        settingsContent.style.height = "80%";
+                        settingsContent.style.height = "77%";
                         document.querySelectorAll(".row input").forEach(input => {
                             input.style.width = "calc(100% - 60px)";
                         });
                     } else if (screenWidth <= 1270) {
-                        settingsContent.style.height = "80%";
+                        settingsContent.style.height = "87%";
                         document.querySelectorAll(".row input").forEach(input => {
                             input.style.width = "calc(100% - 60px)";
                         });    

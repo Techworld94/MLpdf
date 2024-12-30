@@ -534,6 +534,9 @@ form.sign-in-form {
     transform: rotate(-45deg);
     top: -5px;
   }
+  .forgot-password {
+    margin-left: 180px;
+  }
 }
 
 /* Footer */
