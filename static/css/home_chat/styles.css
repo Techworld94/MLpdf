@@ -890,7 +890,7 @@ button.danger:hover, button.delete-acc:hover {
         display: grid; 
         grid-template-columns: 1fr 2fr;
         align-items: center;
-        margin-bottom: 15px;
+        margin-bottom: 5px;
         gap: 10px;
     }
 
@@ -930,7 +930,7 @@ button.danger:hover, button.delete-acc:hover {
 
     .row {
         grid-template-columns: 1fr 1.5fr;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
     }
 
 
