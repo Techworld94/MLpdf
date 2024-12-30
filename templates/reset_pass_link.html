@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+    <title>Reset Password</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #121212; 
+            color: #ffffff; 
+        }
+        .reset-container {
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 400px;
+            transition: transform 0.3s;
+            text-align: center;
+        }
+        .reset-container:hover {
+            transform: scale(1.02);
+        }
+        .reset-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #ffffff;
+        }
+        .reset-container img {
+            max-width: 130px;
+            margin-bottom: 10px;
+        }
+        /* .reset-container label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #cccccc;
+        } */
+        .reset-container .input-container {
+            position: relative;
+        }
+        .reset-container input {
+            width: calc(100% - 55px);
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            font-size: 16px;
+            background: #333;
+            color: #ffffff;
+            transition: border 0.3s;
+            padding-right: 40px;
+        }
+        .reset-container input:focus {
+            border-color: #d0d2e1;
+            outline: none;
+        }
+        .reset-container input::placeholder {
+            color: #aaaaaa;
+        }
+        .eye-icon {
+            position: absolute;
+            right: 10px;
+            top: 30%;
+            transform: translateY(-30%);
+            cursor: pointer;
+            color: #cccccc;
+        }
+        .reset-container button {
+            width: 100%;
+            padding: 12px;
+            background: #484a4e;
+            border: none;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+        .reset-container button:hover {
+            background: #383b42;
+            transform: translateY(-2px);
+        }
+        .reset-container .error {
+            color: red;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="reset-container">
+        <img src = /static/images/hivaani.png alt="company logo">
+        <h2>Reset Password</h2>
+        <form id="resetForm">
+            <div class="input-container">
+                <input type="password" id="password" name="password" placeholder="Enter your new password" required>
+                <i class="fas fa-eye eye-icon" id="toggle-password"></i>
+            </div>
+            <button type="submit">Reset Password</button>
+        </form>
+    </div>
+
+    <!-- Toastify for success messages -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        document.getElementById("toggle-password").addEventListener("click", function () {
+            var passwordField = document.getElementById("password");
+            var eyeIcon = document.getElementById("toggle-password");
+
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                eyeIcon.classList.remove("fa-eye");
+                eyeIcon.classList.add("fa-eye-slash");
+            } else {
+                passwordField.type = "password";
+                eyeIcon.classList.remove("fa-eye-slash");
+                eyeIcon.classList.add("fa-eye");
+            }
+        });
+
+        document.getElementById("resetForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            var formData = new FormData(this);
+            fetch('/reset-password/{{ token }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Password reset failed');
+                }
+                return response.json();
+            })
+            .then(data => {
+                Toastify({
+                    text: data.message,
+                    duration: 3000,
+                    close: true,
+                    gravity: "top", 
+                    position: "right",
+                    backgroundColor: "green"
+                }).showToast();
+
+                setTimeout(() => {
+                    window.location.href = "https://hivaani-zqhprsnjkq-ez.a.run.app/";
+                }, 3000);
+            })
+            .catch(error => {
+                Toastify({
+                    text: error.message,
+                    duration: 3000,
+                    close: true,
+                    gravity: "top", 
+                    position: "right",
+                    backgroundColor: "red"
+                }).showToast();
+            });
+        });
+    </script>
+</body>
+</html>

@@ -6,6 +6,8 @@ import json
 from datetime import datetime, timezone,timedelta
 import stripe
 from flask import Flask, render_template,jsonify,request,redirect,url_for,flash
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer
 from flask_cors import CORS
 from werkzeug.security import check_password_hash, generate_password_hash
 from Misc.conn import MongoDBConnector
@@ -19,6 +21,16 @@ app.secret_key = os.environ.get("SECRET_KEY")
 base_directory = os.environ.get("BASE_DIR")
 stripe.api_key = os.environ.get("STRIPE_KEY")
 CORS(app)
+
+############################### EMAIL Configuration #################################
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get("EMAIL_USERNAME")
+app.config['MAIL_PASSWORD'] = os.environ.get("EMAIL_PASSWORD") 
+s = URLSafeTimedSerializer(app.secret_key)
+mail = Mail(app)
 
 ##################### Initialize Session ####################
 
@@ -125,9 +137,60 @@ def signup():
     users_collection.insert_one(new_user)
     return jsonify({'success': 'User registered successfully'})
 
-######################## Forgot Password link ########################
+######################## Forgot Password link & Token ########################
+@app.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.json
+    email = data.get('email')
 
+    if not email:
+        return jsonify({"error": "Email is required"}), 400
 
+    user = users_collection.find_one({"email": email})
+    username = user.get('username')
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    token = s.dumps(email, salt='password-reset-salt')
+    reset_link = url_for('reset_password', token=token, _external=True)
+
+    try:
+        msg = Message("Password Reset Request", 
+                      sender=f"Hivaani <{app.config['MAIL_USERNAME']}>",
+                      recipients=[email])
+        msg.html = render_template('reset_pass_gmail.html', reset_link=reset_link, username=username)
+        mail.send(msg)
+        return jsonify({"message": "Password reset link sent to your email"}), 200
+    except Exception as e:
+        return jsonify({"error": "Failed to send email", "details": str(e)}), 500
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    if request.method == 'GET':
+        try:
+            email = s.loads(token, salt='password-reset-salt', max_age=3600)
+            return render_template('reset_pass_link.html', token=token)
+        except Exception as e:
+            return "Invalid or expired token. Please request a new password reset.", 400
+    
+    if request.method == 'POST':
+        try:
+            email = s.loads(token, salt='password-reset-salt', max_age=3600)
+        except Exception:
+            return jsonify({"error": "Invalid or expired token"}), 400
+
+        data = request.form
+        new_password = data.get('password')
+        if not new_password:
+            return jsonify({"error": "Password is required"}), 400
+
+        hashed_password = generate_password_hash(new_password)
+        result = users_collection.update_one({"email": email}, {"$set": {"password": hashed_password}})
+        
+        if result.matched_count > 0:
+            return jsonify({"message": "Password reset successfully! Redirecting you to the login page."}), 200
+        else:
+            return jsonify({"message": "Failed to update password. Please try again."}), 500
 
 ######################## Uploaded Files Validation Based On Subscription #######################
 
