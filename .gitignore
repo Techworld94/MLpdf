@@ -3,3 +3,4 @@ venv
 __pycache__
 Misc/__pycache__
 Archieve_files
+ML_Models/googleembeddings.py

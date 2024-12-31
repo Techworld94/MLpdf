@@ -5,7 +5,8 @@ import uuid
 import json
 from datetime import datetime, timezone,timedelta
 import stripe
-from flask import Flask, render_template,jsonify,request,redirect,url_for,flash
+import secrets
+from flask import Flask, render_template,jsonify,request,redirect,url_for,flash,get_flashed_messages
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 from flask_cors import CORS
@@ -50,9 +51,10 @@ chat_collection = db['User_Chats']
 
 @app.route('/', methods=['GET'])
 def index():
+    success_message = get_flashed_messages(category_filter=['success'])
     if session_manager.is_user_logged_in():
         return redirect(url_for('home'))
-    return render_template('login.html')
+    return render_template('login.html',success_message=success_message)
 
 ####################### Login ##########################
 
@@ -100,6 +102,9 @@ def login():
     if not check_password_hash(user['password'], password):
         return jsonify({'error': 'Incorrect password'})
     
+    if user['verification_status'] != 'yes':
+        return jsonify({'error': 'Account not activated. Please check your email.'})
+    
     current_date = datetime.utcnow()
     if user.get('plan') == 'Plus' and 'plan_expiry_date' in user and user['plan_expiry_date']:
         plan_expiry_date = user['plan_expiry_date']
@@ -125,17 +130,61 @@ def signup():
     existing_user = users_collection.find_one({'username': username})
     if existing_user:
         return jsonify({'error': 'Username already exists'})
+    
+    existing_email = users_collection.find_one({'email': email})
+    if existing_email:
+        return jsonify({'error': 'This email is already registered with a different username'}), 400
+    
+    existing_useremail = users_collection.find_one({'username': username, 'email': email})
+    if existing_useremail:
+        return jsonify({'error': 'Username is already registered with this email'}), 400
 
     hashed_password = generate_password_hash(password)
+    verification_token = secrets.token_hex(16)
+
     new_user = {
         'username': username,
         'password': hashed_password,
         'email': email,
+        'verification_token': verification_token,
+        'verification_status': 'no',
         "created_at": datetime.now(timezone.utc),
         'plan': 'Free'
     }
     users_collection.insert_one(new_user)
+
+    send_verification_email(email, verification_token)
+
     return jsonify({'success': 'User registered successfully'})
+
+def send_verification_email(email, token):
+    verification_url = url_for('verify_email', token=token, _external=True)
+
+    msg = Message(
+        'account verification',
+        sender=f"Hivaani <{app.config['MAIL_USERNAME']}>",
+        recipients=[email]
+    )
+    msg.html = render_template('verification_email.html', verify_link=verification_url)
+    mail.send(msg)
+
+######################## Account Verification ################################
+
+@app.route('/verify_email/<token>', methods=['GET'])
+def verify_email(token):
+    user_data = users_collection.find_one({'verification_token': token})
+
+    if not user_data:
+        return jsonify({'error': 'Invalid or expired verification token'})
+
+    users_collection.update_one(
+        {'verification_token': token},
+        {'$set': {'verification_status': 'yes'}, '$unset': {'verification_token': ""}}
+    )
+
+    flash('Your account has been activated successfully!', 'success')
+
+    return redirect(url_for('index'))
 
 ######################## Forgot Password link & Token ########################
 @app.route('/forgot-password', methods=['POST'])
@@ -511,6 +560,39 @@ def delete_account():
     vector_collection.delete_many({"username": username})
     chat_collection.delete_many({"username": username})
     return jsonify({"message": "Account deleted successfully"})
+
+######################## Contact Email #################################################
+
+@app.route('/send-email', methods=['GET', 'POST'])
+def send_email():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+        message = request.form.get('message')
+
+        if not name or not email or not message:
+            return jsonify({"status": "error", "message": "Please fill out all required fields."}), 400
+
+        try:
+            msg = Message(
+                subject=f"New Contact Form Submission from {name}",
+                sender=email,
+                recipients=['htechno0786@gmail.com'] 
+            )
+            msg.html = render_template(
+                'contact_email.html',
+                name=name,
+                email=email,
+                phone=phone,
+                message=message
+            )
+            mail.send(msg)
+            return jsonify({"status": "success", "message": "Your message has been sent successfully!"}), 200
+        except Exception as e:
+            return jsonify({"status": "error", "message": f"Failed to send the message. Error: {str(e)}"}), 500
+
+    return render_template('contact.html')
 
 ######################## Success ############################
 

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Form Submission</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .email-header {
+            background-color: #4CAF50;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .email-body {
+            padding: 20px;
+        }
+
+        .email-body p {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .email-body .label {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .email-footer {
+            background-color: #f9f9f9;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            color: #777;
+        }
+
+        .email-footer a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        /* Media Query for Mobile View */
+        @media only screen and (max-width: 570px) {
+            .email-header {
+                font-size: 20px;
+                padding: 15px;
+            }
+
+            .email-body {
+                padding: 15px;
+            }
+
+            .email-body p {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            New Contact Form Submission
+        </div>
+        <div class="email-body">
+            <p><span class="label">Name:</span> {{ name }}</p>
+            <p><span class="label">Email:</span> {{ email }}</p>
+            <p><span class="label">Phone:</span> {{ phone }}</p>
+            <p><span class="label">Message:</span></p>
+            <p>{{ message }}</p>
+        </div>
+        <div class="email-footer">
+            &copy; 2024 <a href="https://hivaani.com">Hivaani</a>. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>
