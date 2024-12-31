@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hivaani</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/contact/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
   </head>
   <body>
@@ -38,18 +39,18 @@
           </p>
 
           <div class="info">
-            <div class="information">
+            <!-- <div class="information">
               <img src="static/images/location.png" class="icon" alt="" />
               <p>Henry Dunantweg 5B, 2402NM, Alphen aan den rijn</p>
-            </div>
+            </div> -->
             <div class="information">
               <img src="static/images/email.png" class="icon" alt="" />
               <p>htechno0786@gmail.com</p>
             </div>
-            <div class="information">
+            <!-- <div class="information">
               <img src="static/images/phone.png" class="icon" alt="" />
               <p>+31-639262121</p>
-            </div>
+            </div> -->
           </div>
 
           <div class="social-media">
@@ -75,31 +76,31 @@
           <span class="circle one"></span>
           <span class="circle two"></span>
 
-          <form action="index.html" autocomplete="off">
+          <form action="/send-email" method="POST" autocomplete="off">
             <h3 class="title">Contact us</h3>
             <div class="input-container">
-              <input type="text" name="name" class="input" />
+              <input type="text" name="name" class="input" required />
               <label for="">
                 <i class="fas fa-user"></i> Username
               </label>
               <span>Username</span>
             </div>
             <div class="input-container">
-              <input type="email" name="email" class="input" />
+              <input type="email" name="email" class="input" required/>
               <label for="">
                 <i class="fas fa-envelope"></i> Email
               </label>
               <span>Email</span>
             </div>
             <div class="input-container">
-              <input type="tel" name="phone" class="input" />
+              <input type="tel" name="phone" class="input" required/>
               <label for="">
                 <i class="fas fa-phone"></i> Phone
               </label>
               <span>Phone</span>
             </div>
             <div class="input-container textarea">
-              <textarea name="message" class="input"></textarea>
+              <textarea name="message" class="input" required></textarea>
               <label for="">
                 <i class="fas fa-comment"></i> Message
               </label>

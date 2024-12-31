@@ -54,6 +54,22 @@ document.addEventListener("DOMContentLoaded", function () {
         toggleIcon.classList.toggle("active"); 
     });
 
+    /////////////////////////////// Account Activation //////////////////////////////////
+
+    var successMessage = document.getElementById('success-message');
+
+    if (successMessage && !sessionStorage.getItem('toastDisplayed')) {
+        Toastify({
+            text: successMessage.innerText,
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "green",
+            close: true
+        }).showToast();
+        sessionStorage.setItem('toastDisplayed', 'true');
+    }
+
     ////////////////////////////////////////LOGIN ///////////////////////////////////////
     
     document.querySelector('.sign-in-form').addEventListener('submit', function (event) {
