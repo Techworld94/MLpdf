@@ -57,10 +57,11 @@ document.addEventListener("DOMContentLoaded", function () {
     /////////////////////////////// Account Activation //////////////////////////////////
 
     var successMessage = document.getElementById('success-message');
+    var isVerified = successMessage.getAttribute('data-verified');
 
-    if (successMessage && !sessionStorage.getItem('toastDisplayed')) {
+    if (isVerified === 'true' && !sessionStorage.getItem('toastDisplayed')) {
         Toastify({
-            text: successMessage.innerText,
+            text: "Your account has been activated successfully!",
             duration: 3000,
             gravity: "top",
             position: "right",
@@ -162,7 +163,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
             if (data.success) {
                 Toastify({
-                    text: "User registered successfully!",
+                    text: "User registered! Check your email to verify your account.",
                     duration: 3000,
                     backgroundColor: "green",
                     close: true,

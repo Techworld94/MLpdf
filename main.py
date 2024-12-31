@@ -184,7 +184,7 @@ def verify_email(token):
 
     flash('Your account has been activated successfully!', 'success')
 
-    return redirect(url_for('index'))
+    return redirect(url_for('index', verified='true'))
 
 ######################## Forgot Password link & Token ########################
 @app.route('/forgot-password', methods=['POST'])
@@ -475,8 +475,8 @@ def create_checkout_session():
                 },
             ],
             mode='payment',
-            success_url='https://hivaani-zqhprsnjkq-ez.a.run.app/success?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url='https://hivaani-zqhprsnjkq-ez.a.run.app/cancel?session_id={CHECKOUT_SESSION_ID}',
+            success_url='http://127.0.0.1:8080/success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url='http://127.0.0.1:8080/cancel?session_id={CHECKOUT_SESSION_ID}',
             )
 
         return jsonify({'sessionId': session.id, 'status': 'success'})
