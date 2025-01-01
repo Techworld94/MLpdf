@@ -456,7 +456,7 @@ def create_checkout_session():
             return jsonify({'error': 'Invalid plan selected'}), 400
 
         session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
+            payment_method_types=['card', 'ideal'],
             line_items=[
                 {
                     'price_data': {
