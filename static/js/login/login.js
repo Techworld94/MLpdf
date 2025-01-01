@@ -56,20 +56,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /////////////////////////////// Account Activation //////////////////////////////////
 
-    // var isVerified = document.cookie.includes('verified=true');
+    var isVerified = document.cookie.includes('verified=true');
 
-    // if (isVerified) {
-    //     Toastify({
-    //         text: "Your account has been activated successfully!",
-    //         duration: 3000,
-    //         gravity: "top",
-    //         position: "right",
-    //         backgroundColor: "green",
-    //         close: true
-    //     }).showToast();
+    if (isVerified) {
+        Toastify({
+            text: "Your account has been activated successfully!",
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "green",
+            close: true
+        }).showToast();
 
-    //     document.cookie = "verified=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    // }
+        document.cookie = "verified=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    }
 
     ////////////////////////////////////////LOGIN ///////////////////////////////////////
     

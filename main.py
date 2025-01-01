@@ -93,9 +93,9 @@ def home():
 
 @app.route('/login', methods=['POST'])
 def login():
-    username = request.form['username'].lower()
-    password = request.form['password']
-    user = users_collection.find_one({'username': username.lower()})
+    username = request.form['username'].strip().lower()
+    password = request.form['password'].strip()
+    user = users_collection.find_one({'username': username})
 
     if not user:
         return jsonify({'error': 'Username does not exist'})
@@ -124,9 +124,9 @@ def login():
 
 @app.route('/signup', methods=['POST'])
 def signup():
-    username = request.form['username']
-    password = request.form['password']
-    email = request.form['email']
+    username = request.form['username'].strip().lower()
+    password = request.form['password'].strip()
+    email = request.form['email'].strip().lower()
 
     existing_user = users_collection.find_one({'username': username})
     if existing_user:
@@ -183,12 +183,11 @@ def verify_email(token):
         {'$set': {'verification_status': 'yes'}, '$unset': {'verification_token': ""}}
     )
 
-    # resp = make_response(redirect(url_for('index')))
-    # resp.set_cookie('verified', 'true', max_age=3600)
-    # flash('Your account has been activated successfully!', 'success')
+    resp = make_response(redirect(url_for('index')))
+    resp.set_cookie('verified', 'true', max_age=3600)
+    flash('Your account has been activated successfully!', 'success')
 
-    # return resp
-    return redirect(url_for('index'))
+    return resp
 
 ######################## Forgot Password link & Token ########################
 @app.route('/forgot-password', methods=['POST'])
