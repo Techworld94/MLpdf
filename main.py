@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timezone,timedelta
 import stripe
 import secrets
-from flask import Flask, render_template,jsonify,request,redirect,url_for,flash,get_flashed_messages
+from flask import Flask, render_template,jsonify,request,redirect,url_for,flash,get_flashed_messages,make_response
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 from flask_cors import CORS
@@ -183,9 +183,11 @@ def verify_email(token):
         {'$set': {'verification_status': 'yes'}, '$unset': {'verification_token': ""}}
     )
 
+    resp = make_response(redirect(url_for('index')))
+    resp.set_cookie('verified', 'true', max_age=3600)
     flash('Your account has been activated successfully!', 'success')
 
-    return redirect(url_for('index', verified='true'))
+    return resp
 
 ######################## Forgot Password link & Token ########################
 @app.route('/forgot-password', methods=['POST'])
@@ -612,7 +614,7 @@ def send_email():
             msg = Message(
                 subject=f"New Contact Form Submission from {name}",
                 sender=email,
-                recipients=['htechno0786@gmail.com'] 
+                recipients=[app.config['MAIL_USERNAME']] 
             )
             msg.html = render_template(
                 'contact_email.html',

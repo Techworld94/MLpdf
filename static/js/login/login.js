@@ -56,10 +56,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /////////////////////////////// Account Activation //////////////////////////////////
 
-    var successMessage = document.getElementById('success-message');
-    var isVerified = successMessage.getAttribute('data-verified');
+    var isVerified = document.cookie.includes('verified=true');
 
-    if (isVerified === 'true' && !sessionStorage.getItem('toastDisplayed')) {
+    if (isVerified) {
         Toastify({
             text: "Your account has been activated successfully!",
             duration: 3000,
@@ -68,7 +67,8 @@ document.addEventListener("DOMContentLoaded", function () {
             backgroundColor: "green",
             close: true
         }).showToast();
-        sessionStorage.setItem('toastDisplayed', 'true');
+
+        document.cookie = "verified=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     }
 
     ////////////////////////////////////////LOGIN ///////////////////////////////////////
