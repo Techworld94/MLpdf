@@ -21,6 +21,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY")
 base_directory = os.environ.get("BASE_DIR")
 stripe.api_key = os.environ.get("STRIPE_KEY")
+stripe_pk = os.environ.get("STRIPE_PK")
 CORS(app)
 
 ############################### EMAIL Configuration #################################
@@ -86,7 +87,7 @@ def home():
     if not user:
         session_manager.clear_user_session()
         return redirect(url_for('index'))
-    return render_template('home.html', username=username)
+    return render_template('home.html', stripe_pk=stripe_pk, username=username)
 
 ########################## Login API ######################
 

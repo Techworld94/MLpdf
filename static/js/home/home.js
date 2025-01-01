@@ -481,6 +481,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     ///////////////////////////////////////////// Make a Stripe Payment //////////////////////////////////////////////////
     const username = document.getElementById("userMenu").getAttribute("data-username");
+    const stripeKey = document.getElementById("stripe_pk").getAttribute("data-messages");
 
     document.getElementById('plan-dropdown').addEventListener('change', function () {
         const selectedPlan = this.value;
@@ -492,7 +493,6 @@ document.addEventListener("DOMContentLoaded", function () {
     
     async function redirectToStripe() {
         try {
-            const stripeKey = process.env.STRIPE_PK;
             const response = await fetch('/create-checkout-session', {
                 method: 'POST',
                 headers: {
@@ -512,6 +512,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // console.log("Session ID:", sessionId, "Status:", status);
             if (status === 'success') {
                 const stripe = Stripe(stripeKey);
+                console.log(stripe)
                 await stripe.redirectToCheckout({ sessionId });
             } else {
                 showToast('Payment failed, please try again.', 'error');
