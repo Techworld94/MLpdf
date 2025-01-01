@@ -183,11 +183,12 @@ def verify_email(token):
         {'$set': {'verification_status': 'yes'}, '$unset': {'verification_token': ""}}
     )
 
-    resp = make_response(redirect(url_for('index')))
-    resp.set_cookie('verified', 'true', max_age=3600)
-    flash('Your account has been activated successfully!', 'success')
+    # resp = make_response(redirect(url_for('index')))
+    # resp.set_cookie('verified', 'true', max_age=3600)
+    # flash('Your account has been activated successfully!', 'success')
 
-    return resp
+    # return resp
+    return redirect(url_for('index'))
 
 ######################## Forgot Password link & Token ########################
 @app.route('/forgot-password', methods=['POST'])
