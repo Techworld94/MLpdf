@@ -512,7 +512,6 @@ document.addEventListener("DOMContentLoaded", function () {
             // console.log("Session ID:", sessionId, "Status:", status);
             if (status === 'success') {
                 const stripe = Stripe(stripeKey);
-                console.log(stripe)
                 await stripe.redirectToCheckout({ sessionId });
             } else {
                 showToast('Payment failed, please try again.', 'error');
