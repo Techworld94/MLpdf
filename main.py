@@ -350,8 +350,6 @@ def session_home(session_id):
             for session in sessions
         ]
 
-    print(session_titles)
-
     messages = []
     if sessions:
         for session in sessions:
@@ -405,9 +403,6 @@ async def query_bot():
         bot = QueryBot(faiss_index_path=faiss_index_path, subscription_type=subscription_type)       
         bot.load_vector_store(embedding_model="models/text-embedding-004")
         response = await bot.answer_question(user_question, chat_model="gemini-1.5-pro")
-        print("Bot Response:", response)
-        
-        # Check if a session already exists in chat_collection
         chat_session = chat_collection.find_one({"session_id": session_id})
 
         if not chat_session:
@@ -437,7 +432,6 @@ async def query_bot():
             )
             return jsonify({"response": response, "username": username, "session_id": session_id, "title": chat_session.get("title", "New Chat")})
     except Exception as e:
-        print(f"Error in query_bot: {e}")
         return jsonify({"error": str(e)}), 500
 
 ######################## Get the Chats #####################
@@ -482,7 +476,6 @@ def create_checkout_session():
         return jsonify({'sessionId': session.id, 'status': 'success'})
 
     except Exception as e:
-        print(f"Error creating checkout session: {e}")
         return jsonify({'error': str(e)}), 500
     
 ####################### Update plan and other details in DB After stripe payment success##############################
@@ -560,6 +553,46 @@ def delete_account():
     vector_collection.delete_many({"username": username})
     chat_collection.delete_many({"username": username})
     return jsonify({"message": "Account deleted successfully"})
+
+######################## Edit Title of conversation row ################################
+
+@app.route('/update_chat/<string:session_id>', methods=['PUT'])
+def update_chat(session_id):
+    username = session_manager.get_logged_in_user()
+    if not username:
+        return jsonify({"error": "User not logged in"}), 400
+
+    data = request.get_json()
+    new_title = data.get("title")
+
+    if not new_title:
+        return jsonify({"error": "New title is required"}), 400
+
+    result = chat_collection.update_one(
+        {"username": username, "session_id": session_id},
+        {"$set": {"title": new_title}}
+    )
+
+    if result.matched_count == 0:
+        return jsonify({"error": "Chat not found"}), 404
+
+    return jsonify({"message": "Title updated successfully"})
+
+
+######################## Delete Converssation row ######################################
+
+@app.route('/delete_chat/<string:session_id>', methods=['DELETE'])
+def delete_chat(session_id):
+    username = session_manager.get_logged_in_user()
+    if not username:
+        return jsonify({"error": "User not logged in"}), 400
+
+    result_by_session = chat_collection.delete_one({"username": username, "session_id": session_id})
+    if result_by_session.deleted_count > 0:
+        return jsonify({"message": "Chat deleted successfully"})
+
+    return jsonify({"error": "Chat not found"}), 404
+
 
 ######################## Contact Email #################################################
 

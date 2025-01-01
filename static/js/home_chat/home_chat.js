@@ -92,8 +92,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         const sessionTitlesJSON = document.getElementById("session-titles").getAttribute("data-titles");
         const messagesJSON = document.getElementById("session-titles").getAttribute("data-messages");
     
-        console.log("Raw data in data-titles:", sessionTitlesJSON);
-        console.log("Raw data in data-messages:", messagesJSON);
+        // console.log("Raw data in data-titles:", sessionTitlesJSON);
+        // console.log("Raw data in data-messages:", messagesJSON);
     
         try {
             if (sessionTitlesJSON.trim().startsWith('[') && sessionTitlesJSON.trim().endsWith(']')) {
@@ -278,6 +278,73 @@ document.addEventListener("DOMContentLoaded", async () => {
         conversationItem.appendChild(conversationButton);
         conversationItem.appendChild(fadeDiv);
         conversationItem.appendChild(editButtons);
+        conversationButton.setAttribute("data-session-id", sessionId);
+
+        //////////////////// Edit Title Conversation row using Edit Button //////////////////
+
+        editButton.addEventListener("click", async function () {
+            const sessionId = conversationButton.getAttribute("data-session-id");
+        
+            if (!sessionId) {
+                console.error("Session ID not found for this conversation");
+                return;
+            }
+        
+            const newTitle = prompt("Enter the new title for this conversation:", conversationButton.textContent.trim());
+        
+            if (!newTitle || newTitle.trim() === "") {
+                console.error("Invalid title entered");
+                return;
+            }
+        
+            try {
+                const response = await fetch(`/update_chat/${sessionId}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ title: newTitle.trim() }),
+                });
+        
+                const result = await response.json();
+                if (response.ok) {
+                    // console.log(result.message);
+                    conversationButton.innerHTML = `<i class="fa fa-message fa-regular"></i> ${newTitle.trim()}`;
+                } else {
+                    console.error("Error updating title:", result.error);
+                }
+            } catch (error) {
+                console.error("Error during title update:", error);
+            }
+        });        
+
+        //////////////////// Delete Conversation row using delete button ////////////////////
+
+        deleteButton.addEventListener("click", async function () {
+            const sessionId = conversationButton.getAttribute("data-session-id");
+            if (!sessionId) {
+                console.error("Session ID not found for this conversation");
+                return;
+            }
+        
+            // console.log("Deleting session:", sessionId);
+            try {
+                const response = await fetch(`/delete_chat/${sessionId}`, {
+                    method: "DELETE",
+                });
+        
+                const result = await response.json();
+                if (response.ok) {
+                    conversationItem.remove();
+                    clearConversationView();
+                    showView(".conversation-view");
+                } else {
+                    console.error("Error deleting conversation:", result.error);
+                }
+            } catch (error) {
+                console.error("Error during deletion:", error);
+            }
+        });   
     
         if (isToday) {
             conversationsList.insertBefore(conversationItem, todayGrouping.nextSibling);
@@ -323,11 +390,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                     addConversationToSidebar(data.title, sessionId, new Date().toISOString().split("T")[0]);
                 }
             } else {
-                console.error("API Error:", data.error);
+                // console.error("API Error:", data.error);
                 typingIndicatorContent.innerHTML = `<p>Something went wrong. Please try again.</p>`;
             }
         } catch (error) {
-            console.error("Error during API call:", error);
+            // console.error("Error during API call:", error);
             typingIndicatorContent.innerHTML = `<p>Failed to connect to the server. Please try later.</p>`;
         } 
     }

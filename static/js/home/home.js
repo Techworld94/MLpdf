@@ -339,7 +339,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const formData = new FormData();
         [...files].forEach(file => {
             formData.append('files[]', file);
-            console.log(`File uploaded: ${file.name}`);
+            // console.log(`File uploaded: ${file.name}`);
         });
 
         showLoader();
@@ -354,7 +354,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (Array.isArray(data.results)) {
                 const successCount = data.results.filter(result => result.status === "✅ Text extracted successfully").length;
                 sessionStorage.setItem('successCount', successCount);
-                console.log(`Number of files with successful text extraction: ${successCount}`);
+                // console.log(`Number of files with successful text extraction: ${successCount}`);
                 showModal(data.results);
             } else if (data.error) {
                 showToast(`${data.error}`, 'error');
@@ -364,7 +364,7 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .catch(error => {
             hideLoader();
-            console.error('Error validating files:', error);
+            // console.error('Error validating files:', error);
             showToast('An error occurred while validating files. Please try again.', 'error');
         });
     }
@@ -431,7 +431,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     const formData = new FormData();
                     [...files].forEach(file => {
                         formData.append('files[]', file);
-                        console.log(`File uploaded: ${file.name}`);
+                        // console.log(`File uploaded: ${file.name}`);
                     });
 
                     startProcessing(formData);
@@ -508,7 +508,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
     
             const { sessionId, status } = await response.json();
-            console.log("Session ID:", sessionId, "Status:", status);
+            // console.log("Session ID:", sessionId, "Status:", status);
             if (status === 'success') {
                 const stripe = Stripe('pk_test_51QMqgQGAuM9oavUCVFhplM1y5cIz1LPNGS5ZWNDD8iBZCXNjjC54AdAfNvV6qLa6PzmSlTkMfDUNVqHOllrHYV2000YFtB5c0b');
                 await stripe.redirectToCheckout({ sessionId });
@@ -516,7 +516,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 showToast('Payment failed, please try again.', 'error');
             }
         } catch (error) {
-            console.error('Error redirecting to Stripe:', error.message);
+            // console.error('Error redirecting to Stripe:', error.message);
             showToast('Error redirecting to payment page: ' + error.message, 'error');
         } finally {
             hideLoader()
