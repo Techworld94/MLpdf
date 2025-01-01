@@ -492,6 +492,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     async function redirectToStripe() {
         try {
+            const stripeKey = process.env.STRIPE_PK;
             const response = await fetch('/create-checkout-session', {
                 method: 'POST',
                 headers: {
@@ -510,7 +511,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const { sessionId, status } = await response.json();
             // console.log("Session ID:", sessionId, "Status:", status);
             if (status === 'success') {
-                const stripe = Stripe('pk_test_51QMqgQGAuM9oavUCVFhplM1y5cIz1LPNGS5ZWNDD8iBZCXNjjC54AdAfNvV6qLa6PzmSlTkMfDUNVqHOllrHYV2000YFtB5c0b');
+                const stripe = Stripe(stripeKey);
                 await stripe.redirectToCheckout({ sessionId });
             } else {
                 showToast('Payment failed, please try again.', 'error');
