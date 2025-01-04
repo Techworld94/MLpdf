@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById('return-dashboard').addEventListener('click', async () => {
         const data = {
+            username: localStorage.getItem('username'),
             plan: "Plus",
             plan_update_date: new Date().toISOString(),
             plan_expiry_date: new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000).toISOString()
