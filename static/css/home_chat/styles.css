@@ -859,7 +859,7 @@ button.danger:hover, button.delete-acc:hover {
 @media (max-width: 870px) {
     .settings-content {
         width: 90%;
-        height: 75%;
+        height: auto;
         margin: 10% auto;
     }
 

@@ -77,6 +77,31 @@ document.addEventListener("DOMContentLoaded", function () {
         }).showToast();
     }
 
+    //////////// window loaded for auto deleting the plan if expiry meets the current date////
+
+    window.onload = async () => {
+        try {
+            const response = await fetch('/delete-plan-home', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+    
+            if (!response.ok) {
+                throw new Error('Failed to check plan status.');
+            }
+    
+            const data = await response.json();
+            if (data.status === 'expired') {
+                showToast(data.message + ' Please upgrade to use the full service.');
+            } else if (data.status === 'active') {
+            }
+        } catch (error) {
+            console.error('Error checking plan status:', error.message);
+        }
+    };
+
     ////////////////////// Date Format - dd/mm/yyyy ////////////////////////////
 
     function formatDate(utcDateString) {
@@ -118,7 +143,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             input.style.width = "calc(100% - 50px)";
                         });
                     } else if (screenWidth <= 870) {
-                        settingsContent.style.height = "77%";
+                        settingsContent.style.height = "auto";
                         document.querySelectorAll(".row input").forEach(input => {
                             input.style.width = "calc(100% - 60px)";
                         });
@@ -128,15 +153,15 @@ document.addEventListener("DOMContentLoaded", function () {
                             input.style.width = "calc(100% - 60px)";
                         });    
                     } else {
-                        settingsContent.style.height = "75%";
+                        settingsContent.style.height = "auto%";
                     }
                 } else if (subscription === "Free") {
                     if (screenWidth <= 570) {
                         settingsContent.style.height = "auto";
                     } else if (screenWidth <= 870) {
-                        settingsContent.style.height = "75%";
+                        settingsContent.style.height = "auto%";
                     } else {
-                        settingsContent.style.height = "65%";
+                        settingsContent.style.height = "auto%";
                     }
                 }
             }
@@ -482,6 +507,8 @@ document.addEventListener("DOMContentLoaded", function () {
     ///////////////////////////////////////////// Make a Stripe Payment //////////////////////////////////////////////////
     const username = document.getElementById("userMenu").getAttribute("data-username");
     const stripeKey = document.getElementById("stripe_pk").getAttribute("data-messages");
+
+    localStorage.setItem('username', username);
 
     document.getElementById('plan-dropdown').addEventListener('change', function () {
         const selectedPlan = this.value;

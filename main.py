@@ -75,7 +75,7 @@ def pricing():
 def contact():
     return render_template('contact.html')
 
-########################## HVPDF Chat Home ########################
+########################## Hivaani Chat Home ########################
 
 @app.route('/home')
 def home():
@@ -88,6 +88,25 @@ def home():
         session_manager.clear_user_session()
         return redirect(url_for('index'))
     return render_template('home.html', stripe_pk=stripe_pk, username=username)
+
+@app.route('/delete-plan-home', methods=['POST'])
+def delete_plan_home():
+    username = session_manager.get_logged_in_user()
+    user = users_collection.find_one({'username': username})
+    current_date = datetime.utcnow()
+
+    if user:
+        if user.get('plan') == 'Plus' and 'plan_expiry_date' in user and user['plan_expiry_date']:
+            plan_expiry_date = user['plan_expiry_date']
+            if current_date >= plan_expiry_date:
+                users_collection.update_one(
+                    {'username': username},
+                    {'$set': {'plan': 'Free'},
+                     '$unset': {'plan_update_date': "", 'plan_expiry_date': ""}}
+                )
+                return jsonify({'status': 'expired', 'message': 'Your plan has expired.'}), 200
+        return jsonify({'status': 'active', 'message': 'Your plan is still active.'}), 200
+    return jsonify({'status': 'error', 'message': 'User not found.'}), 404
 
 ########################## Login API ######################
 
@@ -487,7 +506,7 @@ def create_checkout_session():
 def update_plan():
     data = request.json
     plan = data.get('plan')
-    username = session_manager.get_logged_in_user() 
+    username = data.get('username')
     plan_update_date = datetime.fromisoformat(data.get('plan_update_date'))
     plan_expiry_date = datetime.fromisoformat(data.get('plan_expiry_date'))
 

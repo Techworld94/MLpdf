@@ -450,7 +450,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                             input.style.width = "calc(100% - 50px)";
                         });
                     } else if (screenWidth <= 870) {
-                        settingsContent.style.height = "77%";
+                        settingsContent.style.height = "auto";
                         document.querySelectorAll(".row input").forEach(input => {
                             input.style.width = "calc(100% - 60px)";
                         });
@@ -460,15 +460,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                             input.style.width = "calc(100% - 60px)";
                         });    
                     } else {
-                        settingsContent.style.height = "75%";
+                        settingsContent.style.height = "auto";
                     }
                 } else if (subscription === "Free") {
                     if (screenWidth <= 570) {
                         settingsContent.style.height = "auto";
                     } else if (screenWidth <= 870) {
-                        settingsContent.style.height = "75%";
+                        settingsContent.style.height = "auto";
                     } else {
-                        settingsContent.style.height = "65%";
+                        settingsContent.style.height = "auto";
                     }
                 }
             }
