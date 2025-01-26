@@ -6,16 +6,21 @@ import json
 from datetime import datetime, timezone,timedelta
 import stripe
 import secrets
-from flask import Flask, render_template,jsonify,request,redirect,url_for,flash,get_flashed_messages,make_response
+from flask import Flask, render_template,jsonify,request,redirect,url_for,flash,get_flashed_messages,make_response, send_file
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 from flask_cors import CORS
 from werkzeug.security import check_password_hash, generate_password_hash
+from io import BytesIO
+from docx import Document
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 from Misc.conn import MongoDBConnector
 from Misc.session import SessionManager
 from ML_Models.pdf_extractor import PDFExtractor
 from ML_Models.ML_Logic import QueryBot
 from Subscriptions.pricing import PricingValidator
+from Services.motivation import MotivationLetterGenerator
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY")
@@ -69,6 +74,12 @@ def about():
 def pricing():
     return render_template('pricing.html')
 
+####################### Services ##########################
+
+@app.route('/services')
+def services():
+    return render_template('services.html')
+
 ####################### Pricing ##########################
 
 @app.route('/contact')
@@ -96,7 +107,7 @@ def delete_plan_home():
     current_date = datetime.utcnow()
 
     if user:
-        if user.get('plan') == 'Plus' and 'plan_expiry_date' in user and user['plan_expiry_date']:
+        if user.get('plan') != 'Free' and 'plan_expiry_date' in user and user['plan_expiry_date']:
             plan_expiry_date = user['plan_expiry_date']
             if current_date >= plan_expiry_date:
                 users_collection.update_one(
@@ -126,7 +137,7 @@ def login():
         return jsonify({'error': 'Account not activated. Please check your email.'})
     
     current_date = datetime.utcnow()
-    if user.get('plan') == 'Plus' and 'plan_expiry_date' in user and user['plan_expiry_date']:
+    if user.get('plan') != 'Free' and 'plan_expiry_date' in user and user['plan_expiry_date']:
         plan_expiry_date = user['plan_expiry_date']
         if current_date >= plan_expiry_date:
             users_collection.update_one(
@@ -473,8 +484,18 @@ def create_checkout_session():
         data = request.json
         plan = data.get('plan')
 
-        if plan != 'Plus':
+        if plan != 'Plus' and plan != 'Basic' and plan != 'Pro':
             return jsonify({'error': 'Invalid plan selected'}), 400
+
+        if plan == 'Basic':
+            name = 'Subscription Plan - Basic'
+            price = 999
+        elif plan == 'Pro':
+            name = 'Subscription Plan - Pro'
+            price = 1999
+        elif plan == 'Plus':
+            name = 'Subscription Plan - Plus'
+            price = 2999
 
         session = stripe.checkout.Session.create(
             payment_method_types=['card', 'ideal'],
@@ -483,9 +504,9 @@ def create_checkout_session():
                     'price_data': {
                         'currency': 'eur',
                         'product_data': {
-                            'name': 'Subscription Plan - Plus',
+                            'name': name,
                         },
-                        'unit_amount': 2999,
+                        'unit_amount': price,
                     },
                     'quantity': 1,
                 },
@@ -493,7 +514,7 @@ def create_checkout_session():
             mode='payment',
             success_url='https://hivaani-zqhprsnjkq-ez.a.run.app/success?session_id={CHECKOUT_SESSION_ID}',
             cancel_url='https://hivaani-zqhprsnjkq-ez.a.run.app/cancel?session_id={CHECKOUT_SESSION_ID}',
-            )
+        )
 
         return jsonify({'sessionId': session.id, 'status': 'success'})
 
@@ -660,6 +681,64 @@ def success():
 @app.route('/cancel')
 def cancel():
     return render_template('cancel.html')
+
+####################### Services - Motivation letter ####################
+
+@app.route('/generate-letter', methods=['POST'])
+async def generate_letter():
+    try:
+        job_title = request.form['job_title']
+        job_description = request.form['job_description']
+        company_name = request.form['company_name']
+        pdf_files = request.files.getlist('resume_files')
+
+        if not job_title or not job_description or not company_name:
+            return jsonify({"error": "All fields are required"}), 400
+        if not pdf_files:
+            return jsonify({"error": "At least one PDF file is required"}), 400
+        
+        for pdf in pdf_files:
+            if not pdf.filename.endswith('.pdf') or pdf.content_type != 'application/pdf':
+                return jsonify({"error": f"Invalid file format: {pdf.filename}. Only PDF files are allowed."}), 400
+
+        pdf_extractor = PDFExtractor()
+        file_streams = [io.BytesIO(pdf.read()) for pdf in pdf_files]
+        extracted_text = await pdf_extractor.extract_text(file_streams)
+        text_chunks = pdf_extractor.chunk_text(extracted_text)
+
+        letter_generator = MotivationLetterGenerator()
+        motivation_letter = await letter_generator.generate_motivation_letter(
+            extracted_resume=" ".join(text_chunks),
+            job_title=job_title,
+            job_description=job_description,
+            company_name=company_name
+        )
+
+        return jsonify({"motivation_letter": motivation_letter}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+######################## Download Docs ######################
+
+@app.route('/download-letter', methods=['POST'])
+def download_letter():
+    data = request.get_json()
+    motivation_letter = data.get('letter')
+    format_type = data.get('format')
+
+    if not motivation_letter or not format_type:
+        return jsonify({"error": "Missing letter content or format type"}), 400
+
+    if format_type == 'docx':
+        doc = Document()
+        doc.add_paragraph(motivation_letter)
+        doc_io = BytesIO()
+        doc.save(doc_io)
+        doc_io.seek(0)
+        return send_file(doc_io, as_attachment=True, download_name="motivation_letter.docx", mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+    
+    return jsonify({"error": "Unsupported format"}), 400
 
 ######################## Logout #############################
 
