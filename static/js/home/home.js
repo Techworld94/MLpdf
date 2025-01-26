@@ -136,7 +136,7 @@ document.addEventListener("DOMContentLoaded", function () {
             function applyDynamicStyles(subscription) {
                 const screenWidth = window.innerWidth;
     
-                if (subscription === "Plus") {
+                if (subscription === "Basic" || subscription === "Pro" || subscription === "Plus") {
                     if (screenWidth <= 570) {
                         settingsContent.style.height = "auto";
                         document.querySelectorAll(".row input").forEach(input => {
@@ -167,8 +167,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             if (data.subscription) {
-                if (data.subscription === "Plus") {
-                    planDropdown.value = "Plus";
+                if (data.subscription !== "Free") {
+                    planDropdown.value = data.subscription;
                     langDropdown.value = "Auto-detect" 
 
                     const settingsMainContent = document.querySelector(".settings-main-content .content-section.active");
@@ -512,7 +512,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById('plan-dropdown').addEventListener('change', function () {
         const selectedPlan = this.value;
-        if (selectedPlan === "Plus") {
+        localStorage.setItem('plan', selectedPlan);
+        if (selectedPlan === "Basic" || selectedPlan === "Pro" || selectedPlan === "Plus") {
             showLoader();
             redirectToStripe();
         }
@@ -526,7 +527,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    plan: 'Plus',
+                    plan: localStorage.getItem('plan'),
                     username: username
                 }),
             });

@@ -4,8 +4,18 @@ class PricingValidator:
     SUBSCRIPTION_LIMITS = {
         "Free": {
             "max_files": 1,
-            "max_file_size_mb": 1,
+            "max_file_size_mb": 2,
             "max_pages": 1
+        },
+        "Basic": {
+            "max_files": 5,
+            "max_file_size_mb": 10,
+            "max_pages": 50
+        },
+        "Standard": {
+            "max_files": 5,
+            "max_file_size_mb": 50,
+            "max_pages": 200
         },
         "Plus": {
             "max_files": float("inf"),
