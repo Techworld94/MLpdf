@@ -20,7 +20,7 @@ from Misc.session import SessionManager
 from ML_Models.pdf_extractor import PDFExtractor
 from ML_Models.ML_Logic import QueryBot
 from Subscriptions.pricing import PricingValidator
-from Services.motivation import MotivationLetterGenerator
+from Services.motiv_cover import MotivationLetterGenerator,CoverLetterGenerator
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY")
@@ -691,6 +691,7 @@ async def generate_letter():
         job_description = request.form['job_description']
         company_name = request.form['company_name']
         pdf_files = request.files.getlist('resume_files')
+        letter_type = request.form.get('letter_type') 
 
         if not job_title or not job_description or not company_name:
             return jsonify({"error": "All fields are required"}), 400
@@ -706,15 +707,25 @@ async def generate_letter():
         extracted_text = await pdf_extractor.extract_text(file_streams)
         text_chunks = pdf_extractor.chunk_text(extracted_text)
 
-        letter_generator = MotivationLetterGenerator()
-        motivation_letter = await letter_generator.generate_motivation_letter(
-            extracted_resume=" ".join(text_chunks),
-            job_title=job_title,
-            job_description=job_description,
-            company_name=company_name
-        )
-
-        return jsonify({"motivation_letter": motivation_letter}), 200
+        if letter_type == 'motivation':
+            letter_generator = MotivationLetterGenerator()
+            motivation_letter = await letter_generator.generate_motivation_letter(
+                                    extracted_resume=" ".join(text_chunks),
+                                    job_title=job_title,
+                                    job_description=job_description,
+                                    company_name=company_name
+                                )
+            return jsonify({"motivation_letter": motivation_letter}), 200
+        
+        else:
+            letter_generator = CoverLetterGenerator()
+            cover_letter = await letter_generator.generate_cover_letter(
+                                    extracted_resume=" ".join(text_chunks),
+                                    job_title=job_title,
+                                    job_description=job_description,
+                                    company_name=company_name
+                                )
+            return jsonify({"motivation_letter": cover_letter}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -726,6 +737,7 @@ def download_letter():
     data = request.get_json()
     motivation_letter = data.get('letter')
     format_type = data.get('format')
+    letter_type = data.get('letter_type')
 
     if not motivation_letter or not format_type:
         return jsonify({"error": "Missing letter content or format type"}), 400
@@ -736,7 +748,13 @@ def download_letter():
         doc_io = BytesIO()
         doc.save(doc_io)
         doc_io.seek(0)
-        return send_file(doc_io, as_attachment=True, download_name="motivation_letter.docx", mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+        if letter_type == 'cover':
+            filename = 'cover_letter.docx'
+        else:
+            filename = 'motivation_letter.docx'
+
+        return send_file(doc_io, as_attachment=True, download_name=filename, mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
     
     return jsonify({"error": "Unsupported format"}), 400
 
