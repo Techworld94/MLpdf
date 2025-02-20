@@ -358,7 +358,9 @@ input:checked + .slider:before {
 .modal-left,
 .modal-right {
   flex: 1;
-  margin: 40px;
+  margin-top: 40px;
+  margin-left: 10px;
+  margin-right: 10px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -470,6 +472,19 @@ input[type="text"]:focus {
     width: 90%;
     padding: 15px;
   }
+
+  .toggle-container{
+    top : 430px;
+  }
+
+  .modal-left,
+  .modal-right {
+    margin-top: 5px;
+    gap: 10px;
+  }
+  .spin-button{
+    margin-top:70px;
+  }
   
   .spin-button {
     width: 50px;
@@ -481,10 +496,7 @@ input[type="text"]:focus {
   .modal-content {
     padding: 10px;
   }
-  .modal-left,
-  .modal-right {
-    gap: 10px;
-  }
+  
   .download-buttons button {
     padding: 10px;
     font-size: 14px;
