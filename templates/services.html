@@ -36,7 +36,7 @@
         <div class="cards">
           <div class="card"  id="open-modal">
             <i class="fa-solid fa-robot"></i>
-            <p>Upload or paste your existing resume, and let AI transform it into a winning motivation letter. 
+            <p>Upload or paste your existing resume, and let AI transform it into a winning motivation & cover letter. 
               Tailored, professional, and ATS-ready—land your dream job effortlessly with our intelligent assistant.</p>
           </div>
           <div class="card">
@@ -58,6 +58,15 @@
   <div class="modal" id="modal">
     <div class="modal-content">
       <button class="close-button" id="close-modal">&times;</button>
+      <!-- Toggle Switch -->
+      <div class="toggle-container">
+        <span class="toggle-label" id="toggle-label">Motivation</span>
+        <label class="switch">
+          <input type="checkbox" id="letter-toggle">
+          <span class="slider round"></span>
+        </label>
+        <span class="toggle-label" id="toggle-label">Cover</span>
+      </div>
       <!-- Left Section -->
       <div class="modal-left">
         <label for="resume-upload">Upload Resume:</label>
